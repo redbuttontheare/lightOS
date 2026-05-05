@@ -7,5 +7,6 @@ local ver = "1.0"
 while True do
   print(os .. "v" .. ver)
   print(os .. "basic cmd")
+  print("Hello!")
   break
 end
