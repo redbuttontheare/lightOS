@@ -12,3 +12,4 @@ pastebin run 7pwFMZW8
 
 Codes:
 1. 0x1d - file or folder deleted/видалено файл або папку
+2. 1x...av - alha version/альфа версія
