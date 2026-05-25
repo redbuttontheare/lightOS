@@ -9,3 +9,6 @@ Ua:
 щоб інсталювати ос:
 запусти цю команду в cmd:
 pastebin run 7pwFMZW8
+
+Codes:
+1. 0x1d - file or folder deleted/видалено файл або папку
