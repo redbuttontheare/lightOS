@@ -4,7 +4,6 @@ local filesystem = require("filesystem")
 
 local gpu = component.gpu
 
--- Конфігурація репозиторію (Заміни на свій нікнейм у GitHub)
 local GITHUB_USER = "redbuttontheare"
 local REPO_NAME = "lightOS"
 local BRANCH = "main"
@@ -16,7 +15,7 @@ local function clear()
     gpu.setBackground(0x000000)
     gpu.setForeground(0xFFFFFF)
   end
-  print("\27[2J\27[H") -- Очищення екрана консолі
+  print("\27[2J\27[H")
 end
 
 local function downloadFile(repoPath, localPath)
@@ -31,51 +30,49 @@ clear()
 print("=== LIGHTOS Installation Wizard ===")
 print("-----------------------------------")
 
--- 1. Створення необхідної структури папок на жорсткому диску OpenOS
-if not filesystem.exists("/boot") then
-  filesystem.makeDirectory("/boot")
-end
-
--- 2. Завантаження головного файлу ОС (boot.lua)
-print("\n[1/3] Downloading OS components...")
-local osSuccess = downloadFile("boot.lua", "/boot.lua")
-
-if not osSuccess then
-  print("\nError: Failed to download boot.lua from GitHub!")
-  os.exit()
-end
-
--- 3. Завантаження файлу BIOS у тимчасову папку для прошивки
-print("\n[2/3] Downloading BIOS firmware...")
-local biosTmpPath = "/tmp/bios.lua"
-local biosSuccess = downloadFile("Install/temp/bios.lua", biosTmpPath)
-
-if not biosSuccess then
-  print("\nError: Failed to download bios.lua from GitHub!")
-  os.exit()
-end
-
--- 4. Тиха прошивка EEPROM за допомогою системної утиліти flash
-print("\n[3/3] Flashing EEPROM...")
-if filesystem.exists(biosTmpPath) then
-  -- -q (тихо), -n (назва чипа)
-  local flashCommand = string.format("flash -q -n 'Lightbios' %s > /dev/null 2>&1", biosTmpPath)
-  local flashSuccess = os.execute(flashCommand)
-  
-  if flashSuccess then
-    print("EEPROM flashed successfully")
-  else
-    print("Warning: EEPROM flashing failed! Check if EEPROM is inserted.")
+local directories = {"/lib", "/Apps", "/bin"}
+for _, dir in ipairs(directories) do
+  if not filesystem.exists(dir) then
+    filesystem.makeDirectory(dir)
   end
 end
 
--- 5. Завершення інсталяції
+print("\n[1/4] Downloading OS core components...")
+if not downloadFile("boot.lua", "/boot.lua") then
+  print("Error: Failed to download boot.lua")
+  os.exit()
+end
+
+print("\n[2/4] Downloading system libraries...")
+if not downloadFile("lib/graphics.lua", "/lib/graphics.lua") then
+  print("Error: Failed to download lib/graphics.lua")
+  os.exit()
+end
+
+print("\n[3/4] Downloading default user applications...")
+if not downloadFile("Apps/sample.lua", "/Apps/sample.lua") then
+  print("Error: Failed to download Apps/sample.lua")
+  os.exit()
+end
+
+print("\n[4/4] Flashing EEPROM firmware...")
+local biosTmpPath = "/tmp/bios.lua"
+if downloadFile("Install/temp/bios.lua", biosTmpPath) then
+  local flashCommand = string.format("flash -q -n 'LightOS BIOS' %s > /dev/null 2>&1", biosTmpPath)
+  if os.execute(flashCommand) then
+    print("EEPROM successfully flashed!")
+  else
+    print("Warning: Flashing failed!")
+  end
+else
+  print("Warning: Could not download BIOS file!")
+end
+
 print("\n-----------------------------------")
 print("Installation completed successfully!")
-print("Please remove any OpenOS floppies.")
 print("Press Enter to reboot into LightOS...")
 
 io.read()
 if component.computer then
-  component.computer.shutdown(true) -- Перезавантаження ПК
+  component.computer.shutdown(true)
 end
