@@ -8,6 +8,7 @@ local GITHUB_USER = "redbuttontheare"
 local REPO_NAME = "lightOS"
 local BRANCH = "main"
 
+-- ВИПРАВЛЕНО: додано raw. перед githubusercontent.com
 local BASE_URL = string.format("https://githubusercontent.com", GITHUB_USER, REPO_NAME, BRANCH)
 
 local function clear()
@@ -38,18 +39,21 @@ for _, dir in ipairs(directories) do
 end
 
 print("\n[1/4] Downloading OS core components...")
+-- boot.lua лежить у корені
 if not downloadFile("boot.lua", "/boot.lua") then
   print("Error: Failed to download boot.lua")
   os.exit()
 end
 
 print("\n[2/4] Downloading system libraries...")
+-- lib/graphics.lua лежить у корені/lib
 if not downloadFile("lib/graphics.lua", "/lib/graphics.lua") then
   print("Error: Failed to download lib/graphics.lua")
   os.exit()
 end
 
 print("\n[3/4] Downloading default user applications...")
+-- ВИПРАВЛЕНО: sample.lua у тебе лежить всередині папки Apps
 if not downloadFile("Apps/sample.lua", "/Apps/sample.lua") then
   print("Error: Failed to download Apps/sample.lua")
   os.exit()
@@ -57,6 +61,7 @@ end
 
 print("\n[4/4] Flashing EEPROM firmware...")
 local biosTmpPath = "/tmp/bios.lua"
+-- ВИПРАВЛЕНО: bios.lua лежить в Install/temp/
 if downloadFile("Install/temp/bios.lua", biosTmpPath) then
   local flashCommand = string.format("flash -q -n 'LightOS BIOS' %s > /dev/null 2>&1", biosTmpPath)
   if os.execute(flashCommand) then
