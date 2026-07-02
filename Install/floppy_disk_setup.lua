@@ -45,9 +45,9 @@ end
 
 local function inst_home()
     print("Downloading lightOS Home Edition files...")
-    mkdir("disk/bin")
-    mkdir("disk/libs")
-    mkdir("disk/lightOS")
+    fs.mkdir("disk/bin")
+    fs.mkdir("disk/libs")
+    fs.mkdir("disk/lightOS")
     git("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/Home/lib/lapi.lua", "disk/libs/lapi.lua")
     git("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/Home/installer.lua", "disk/installer.lua")
     print("Installation complete.")
