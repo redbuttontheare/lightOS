@@ -14,7 +14,7 @@ local function boot()
         print("Booting lightOS...")
         local currentPath = shell.path()
         shell.setPath(":/bin:/lightOS:/libs")
-        shell.run("kernel/init.lua")
+        shell.run("lightOS/init.lua")
     end
     elseif input == "1" then
     -- b

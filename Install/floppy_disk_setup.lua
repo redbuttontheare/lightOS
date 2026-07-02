@@ -1,6 +1,22 @@
 term.clear()
 term.setCursorPos(1, 1)
 
+local function git(url, path)
+    local h = http.get(url)
+ 
+    if not h then
+        print("Download failed: " .. url)
+        return
+    end
+ 
+    local file = fs.open(path, "w")
+    file.write(h.readAll())
+    file.close()
+    h.close()
+ 
+    print("Downloaded: " .. path)
+end
+
 print("=== LightOS Boot Disk Creator ===")
 print("Looking for floppy drive...")
 
@@ -25,4 +41,23 @@ print("\nFormatting /disk...")
 local diskFiles = fs.list("disk")
 for _, file in ipairs(diskFiles) do
     fs.delete("disk/" .. file)
+end
+
+local function inst_home()
+    print("Downloading lightOS Home Edition files...")
+    mkdir("disk/bin")
+    mkdir("disk/libs")
+    mkdir("disk/lightOS")
+    git("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/Home/lib/lapi.lua", "disk/libs/lapi.lua")
+    git("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/Home/installer.lua", "disk/installer.lua")
+    print("Installation complete.")
+end
+
+print("Select edition to install:")
+print("Home - lightOS Home Edition")
+sep = read()
+if sep == "Home" then
+    print("Installing lightOS Home Edition...")
+    print("Copying files to /disk...")
+    inst_home()
 end
