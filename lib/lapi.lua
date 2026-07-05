@@ -23,15 +23,4 @@ function lapi.loadConfig(path)
     return config
 end
 
-function lapi.user_hello(config)
-    local username = config.usr or "User"
-    print("Hello, " .. username .. "!")
-end
-
-function lapi.print_vm(config)
-    local version = config.ver or "Version not verified."
-    
-    print("LightOS " .. version)
-end
-
 return lapi
