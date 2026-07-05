@@ -12,6 +12,10 @@
 
 math.randomseed(os.time())
 
+local function cls()
+    term.clear
+end
+
 local function get(path, save)
     local url = path .. "?t=" .. os.time() .. math.random(1, 100000)
     local h = http.get(url)
@@ -29,6 +33,7 @@ get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/button.lua", "
 local button = require("lib/button")
 
 local function Download_Sys()
+    cls()
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/lapi.lua", "lib/lapi.lua")
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/init.lua", "lightOS/init.lua")
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/bs.lua", "lightOS/bs.lua")
@@ -36,15 +41,14 @@ local function Download_Sys()
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec_runner.lua", "lightOS/autoexec_runner.lua")
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec.lua", "lightOS/autoexec.lua")
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/startup.lua", "startup.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/hello.lua", "lightOS/hello.lua")
 end
 
-local function cls()
-    term.clear
-end
 
 local function do_setup()
     fs.makeDir("bin")
     fs.makeDir("lightOS")
+    fs.makeDir("apps")
     term.setCursorPos(1, 3)
     write("Username: ")
     local username = read()
@@ -61,7 +65,6 @@ local function do_setup()
 
     local btn_next = button.new(4, 5, 9, "Next ->", colors.white, colors.black, function()
         Download_Sys()
-        running = false
     end)
 
     btn_next:draw()
@@ -77,6 +80,9 @@ local function do_setup()
     end
 end
 
+
+term.setBackgroundColor(colors.skyblue)
+term.setTextColor(color.white)
 cls()
 local text = "lightOS Installation Wizard"
 local w, h = term.getSize()
