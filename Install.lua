@@ -58,22 +58,14 @@ local function do_setup()
     local running = true
     local buttons = {}
 
-    local btn_next = button.new(4, 4, 10, "Next ->", colors.white, colors.black, function()
+    local btn_next = button.new(4, 5, 9, "Next ->", colors.white, colors.black, function()
         Download_Sys()
         running = false
     end)
 
-    buttons[#buttons + 1] = btn_next
+    btn_next:draw()
 
-    local function drawAll()
-        for _, btn in ipairs(buttons) do
-            btn:draw()
-        end
-    end
-
-    drawAll()
-
-    while running do
+    while true do
         local event, param1, cx, cy = os.pullEvent("mouse_click")
         for _, btn in ipairs(buttons) do
             if btn:handleClick(cx, cy) then
