@@ -38,6 +38,10 @@ local function Download_Sys()
     get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/startup.lua", "startup.lua")
 end
 
+local function cls()
+    term.clear
+end
+
 local function do_setup()
     fs.makeDir("bin")
     fs.makeDir("lightOS")
