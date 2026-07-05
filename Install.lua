@@ -23,22 +23,19 @@ local function get(path, save)
     end
 end
 
-local function cls()
-    term.clear()
-end
-
 fs.makeDir("lib")
-get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lib/button.lua", "lib/button.lua")
+get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/button.lua", "lib/button.lua")
+
 local button = require("lib/button")
 
 local function Download_Sys()
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lib/lapi.lua", "lib/lapi.lua")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lightOS/init.lua", "lightOS/init.lua")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lightOS/bs.lua", "lightOS/bs.lua")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lightOS/bs.nfp", "lightOS/bs.nfp")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/autoexec_runner.lua", "lightOS/autoexec_runner.lua")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/autoexec.lua", "lightOS/autoexec.lua")
-    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/startup.lua", "startup.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/lapi.lua", "lib/lapi.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/init.lua", "lightOS/init.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/bs.lua", "lightOS/bs.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/bs.nfp", "lightOS/bs.nfp")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec_runner.lua", "lightOS/autoexec_runner.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec.lua", "lightOS/autoexec.lua")
+    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/startup.lua", "startup.lua")
 end
 
 local function do_setup()
