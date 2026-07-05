@@ -28,6 +28,7 @@ local function Download_Sys()
     get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/lightOS/bs.nfp", "lightOS/bs.nfp")
     get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/autoexec_runner.lua", "lightOS/autoexec_runner.lua")
     get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/autoexec.lua" "lightOS/autoexec.lua")
+    get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/startup.lua", "startup.lua")
 
 local function do_setup()
     fs.makeDir("bin")
