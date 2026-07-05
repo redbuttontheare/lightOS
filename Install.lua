@@ -45,7 +45,7 @@ local function do_setup()
     cfg_file.close()
 
 
-    local nxt_btn1 = button.new(4, 4, "Next ->", colors.white, colors.black, function()
+    local btn_next = button.new(4, 4, "Next ->", colors.white, colors.black, function()
         Download_Sys()
     end)
 
@@ -54,6 +54,19 @@ local function do_setup()
             btn:draw()
         end
     end
+
+    drawAll()
+
+    while running do
+    local event, param1, cx, cy = os.pullEvent("mouse_click")
+
+        for _, btn in ipairs(buttons) do
+            if btn:handleClick(cx, cy) then
+                break
+            end
+        end
+    end
+
 end
 
 cls()
