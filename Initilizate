@@ -10,6 +10,7 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
+math.randomseed(os.time())
 
 local function get(path, save)
     local url = path .. "?t=" .. os.time() .. math.random(1, 100000)
