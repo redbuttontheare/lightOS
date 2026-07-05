@@ -55,7 +55,6 @@ local function do_setup()
     cfg_file.writeLine("ver=6.5")
     cfg_file.close()
 
-    local running = true
     local buttons = {}
 
     local btn_next = button.new(4, 5, 9, "Next ->", colors.white, colors.black, function()
@@ -64,6 +63,7 @@ local function do_setup()
     end)
 
     btn_next:draw()
+    buttons[#buttons + 1] = btn_next 
 
     while true do
         local event, param1, cx, cy = os.pullEvent("mouse_click")
