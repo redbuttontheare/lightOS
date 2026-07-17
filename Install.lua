@@ -10,75 +10,45 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
-math.randomseed(os.time())
+local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 
-local function cls()
-    term.clear
-end
-
-local function get(path, save)
-    local url = path .. "?t=" .. os.time() .. math.random(1, 100000)
-    local h = http.get(url)
-    if h then
-        local f = fs.open(save, "w")
-        f.write(h.readAll())
-        f.close()
-        h.close()
+local function get(file, savePath)
+    local uniqueId = tostring(os.epoch("utc"))
+    local url = base .. file .. "?nocache=" .. uniqueId
+    
+    local response = http.get({
+        url = url,
+        headers = {
+            ["Cache-Control"] = "no-cache, no-store, must-revalidate",
+            ["Pragma"] = "no-cache",
+            ["Expires"] = "0",
+            ["User-Agent"] = "ComputerCraft-lightOS-" .. uniqueId 
+        }
+    })
+    
+    if not response then
+        return false
     end
+    
+    local code = response.readAll()
+    response.close()
+    
+    local f = fs.open(savePath, "w")
+    if not f then
+        return false
+    end
+    
+    f.write(code)
+    f.close()
+    
+    return true
 end
-
-fs.makeDir("lib")
-get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/button.lua", "lib/button.lua")
-
-local button = require("lib/button")
-
-local function Download_Sys()
-    cls()
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lib/lapi.lua", "lib/lapi.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/init.lua", "lightOS/init.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/bs.lua", "lightOS/bs.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/bs.nfp", "lightOS/bs.nfp")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec_runner.lua", "lightOS/autoexec_runner.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/autoexec.lua", "lightOS/autoexec.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/startup.lua", "startup.lua")
-    get("https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@main/lightOS/hello.lua", "lightOS/hello.lua")
-end
-
 
 local function do_setup()
-    fs.makeDir("bin")
-    fs.makeDir("lightOS")
-    fs.makeDir("apps")
-    term.setCursorPos(1, 3)
-    write("Username: ")
-    local username = read()
-    write("Computer name: ")
-    local pcname = read()
-
-    local cfg_file = fs.open("lightOS/config.cfg", "w")
-    cfg_file.writeLine("usr=" .. username)
-    cfg_file.writeLine("pcname=" .. pcname)
-    cfg_file.writeLine("ver=6.5")
-    cfg_file.close()
-
-    local buttons = {}
-
-    local btn_next = button.new(4, 5, 9, "Next ->", colors.white, colors.black, function()
-        Download_Sys()
-    end)
-
-    btn_next:draw()
-    buttons[#buttons + 1] = btn_next 
-
-    while true do
-        local event, param1, cx, cy = os.pullEvent("mouse_click")
-        for _, btn in ipairs(buttons) do
-            if btn:handleClick(cx, cy) then
-                break
-            end
-        end
-    end
+    
 end
+    
+
 
 
 term.setBackgroundColor(colors.skyblue)

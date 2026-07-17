@@ -12,16 +12,35 @@
 
 math.randomseed(os.time())
 
+local function getLatestSha()
+    local h = http.get("https://api.github.com/repos/redbuttontheare/lightOS/commits/main")
+    if not h then return nil end
+    local body = h.readAll()
+    h.close()
+    return string.match(body, '"sha"%s*:%s*"(%x+)"')
+end
+
 local function get(path, save)
-    local url = path .. "?t=" .. os.time() .. math.random(1, 100000)
-    local h = http.get(url)
+    local h = http.get(path)
     if h then
-        local f = fs.open(save, "w")
-        f.write(h.readAll())
-        f.close()
+        local content = h.readAll()
         h.close()
+        local f = fs.open(save, "w")
+        f.write(content)
+        f.close()
+        print(save .. ": " .. #content .. " bytes")
+    else
+        print("FAIL: " .. path)
     end
 end
 
-get("https://raw.githubusercontent.com/redbuttontheare/lightOS/main/Install.lua", "Install.lua")
+local sha = getLatestSha()
+if not sha then
+    print("can be")
+    sha = "main"
+end
+
+local base = "https://cdn.jsdelivr.net/gh/redbuttontheare/lightOS@" .. sha .. "/"
+
+get(base .. "Install.lua", "Install.lua")
 shell.run("Install.lua")

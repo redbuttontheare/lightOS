@@ -1,0 +1,31 @@
+-- lightOS/bin/ls.lua
+local args = { ... }
+local dir = shell.resolve(args[1] or ".")
+
+if not fs.exists(dir) then
+    printError("No such directory: " .. dir)
+    return
+end
+
+if not fs.isDir(dir) then
+    printError("Not a directory: " .. dir)
+    return
+end
+
+local list = fs.list(dir)
+table.sort(list)
+
+for _, name in ipairs(list) do
+    local fullPath = fs.combine(dir, name)
+    if fs.isDir(fullPath) then
+        term.setTextColor(colors.white)
+        write(name .. "/")
+    else
+        term.setTextColor(colors.green)
+        write(name)
+    end
+    write("  ")
+end
+
+term.setTextColor(colors.white)
+print()
