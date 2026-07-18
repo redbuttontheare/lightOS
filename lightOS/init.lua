@@ -10,15 +10,18 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
-shell.setPath(".:/bin:/lightOS:/lib")
+shell.setPath(":/bin:/lightOS:/lib")
 
 local lapi = dofile("/lib/lapi.lua")
 local autoexec = dofile("/lightOS/autoexec_runner.lua")
 local autoexec_tbl = dofile("/lightOS/autoexec.lua")
-
-local ver = "v" .. config.ver
-
 local cfg = lapi.loadConfig("/lightOS/config.cfg")
+
+local ver = "v" .. cfg.ver
+
+term.clear()
+term.setCursorPos(1,1)
+print("lightOS " .. ver)
 
 if cfg.autoexec ~= "0" then
     local autoexec = dofile("/lightOS/autoexec_runner.lua")
