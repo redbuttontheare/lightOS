@@ -112,6 +112,7 @@ local function licensepage()
     else
         os.reboot
     end
+end
 
 local function do_setup()
     print("Confirm instalation [1 - yes 0 - no]:")
@@ -130,7 +131,7 @@ end
 
 
 
-term.setBackgroundColor(colors.baseblue)
+term.setBackgroundColor(baseblue)
 term.setTextColor(color.white)
 cls()
 local text = "lightOS Installation Wizard"
