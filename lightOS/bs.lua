@@ -16,6 +16,11 @@ term.clear()
 local img = paintutils.loadImage("lightOS/bs.nfp")
 paintutils.drawImage(img, 1, 1)
 
+term.setCursorPos(20, 14)
+term.clearLine()
+term.setCursorPos(20, 14)
+print("lightOS")
+
 sleep(3)
 
 shell.run("lightOS/init.lua")
