@@ -13,4 +13,5 @@
 
 return {
     hello_script = "lightOS/hello.lua"
+    -- gelaxy_boot = "lightOS/gb.lua"
 }

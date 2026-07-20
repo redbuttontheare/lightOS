@@ -1,0 +1,9 @@
+local lapi = dofile("/lib/lapi.lua")
+local cfg = lapi.loadConfig("/lightOS/config.cfg")
+local version = cfg.ver
+local kernel_ver = cfg.kver
+
+print("about lightOS")
+print("lightOS version: " .. version)
+print("Kernel: light kernel " .. kernel_ver)
+print("BIOS: lightOS UEFI")

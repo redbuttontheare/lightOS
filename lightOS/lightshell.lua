@@ -10,8 +10,9 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
--- lightOS custom shell
+-- lightOS custom shell (з gelaxy-заголовком)
 local lapi = dofile("/lib/lapi.lua")
+local gelaxy = dofile("/lib/gelaxy/window.lua")
 
 local bExit = false
 local sDir = shell and shell.dir() or ""
@@ -46,7 +47,6 @@ function shellApi.setAlias(word, program)
     tAliases[word] = program
 end
 
--- резолвить відносний шлях у абсолютний, враховуючи sDir
 function shellApi.resolve(path)
     if path:sub(1, 1) == "/" then
         return fs.combine("", path)
@@ -54,7 +54,6 @@ function shellApi.resolve(path)
     return fs.combine(sDir, path)
 end
 
--- шукає програму по PATH
 function shellApi.resolveProgram(command)
     if tAliases[command] then
         command = tAliases[command]
@@ -79,7 +78,6 @@ function shellApi.exit()
     bExit = true
 end
 
--- запуск програми з аргументами
 function shellApi.run(...)
     local words = { ... }
     local command = table.remove(words, 1)
@@ -91,7 +89,6 @@ function shellApi.run(...)
         return false
     end
 
-    -- перевірка на hashbang (#!interpreter)
     local f = fs.open(path, "r")
     local firstLine = f.readLine()
     f.close()
@@ -125,7 +122,9 @@ end
 
 _G.shell = shellApi
 
--- === ПРОМПТ ===
+
+gelaxy.createWindow("lightOS Shell", colors.black, nil)
+
 local function printPrompt()
     local burmalda = lapi.loadConfig("/lightOS/config.cfg")
     local pcname = burmalda.pcname or "unknown"
@@ -134,19 +133,18 @@ local function printPrompt()
     if dir == "" then dir = "/" end
 
     -- 1 рядок: жовтий, pcname==директорія:
-    term.setTextColor(colors.yellow)
+    term.setTextColor(colors.orange)
     print(pcname .. "==" .. dir .. ":")
 
-    -- 2 рядок: usr темно-синім, $ оранжевим
-    term.setTextColor(colors.blue)
+
+    term.setTextColor(colors.yellow)
     write(usr)
-    term.setTextColor(colors.orange)
+    term.setTextColor(colors.blue)
     write("$ ")
 
     term.setTextColor(colors.white)
 end
 
--- === ГОЛОВНИЙ ЦИКЛ ===
 while not bExit do
     printPrompt()
     local input = read()

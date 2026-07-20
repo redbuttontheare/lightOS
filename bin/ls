@@ -21,7 +21,7 @@ for _, name in ipairs(list) do
         term.setTextColor(colors.white)
         write(name .. "/")
     else
-        term.setTextColor(colors.green)
+        term.setTextColor(colors.blue)
         write(name)
     end
     write("  ")

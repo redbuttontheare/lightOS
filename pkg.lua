@@ -17,8 +17,6 @@ local repos = {
     [OFFICIAL_NAME] = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/packages"
 }
 
--- === repos.cfg: завантаження / збереження ===
-
 local function loadRepos()
     if not fs.exists(REPOS_PATH) then return end
     local f = fs.open(REPOS_PATH, "r")
@@ -39,14 +37,11 @@ end
 
 local function saveRepos()
     local f = fs.open(REPOS_PATH, "w")
-    -- офіційний репо теж пишемо у файл, щоб він одразу був видимий користувачу
     for name, url in pairs(repos) do
         f.writeLine(name .. "=" .. url)
     end
     f.close()
 end
-
--- === завантаження одного файлу з довільного URL ===
 
 local function get(url, savePath)
     local uniqueId = tostring(os.epoch("utc"))
@@ -77,7 +72,6 @@ local function get(url, savePath)
     return true
 end
 
--- === побудова списку репо в порядку перевірки: спочатку офіційний, потім решта ===
 
 local function orderedRepoList()
     local ordered = {}
@@ -95,7 +89,6 @@ local function orderedRepoList()
     return ordered
 end
 
--- === пошук <pkgName>_config.lua, офіційний репо перевіряється першим ===
 
 local function findPackageConfig(pkgName)
     for _, repo in ipairs(orderedRepoList()) do
@@ -113,10 +106,7 @@ local function findPackageConfig(pkgName)
     return nil
 end
 
--- === встановлення пакету ===
 
--- завантажити всі файли пакету (cfg.files), розкласти по /bin, /apps/<name>, /lib/<name>
--- залежно від cfg.type. Повертає true, якщо все ок, false якщо були помилки.
 local function downloadPackageFiles(cfg, base)
     if not cfg.files then
         printError("Package config has no 'files' list.")
@@ -156,8 +146,6 @@ local function downloadPackageFiles(cfg, base)
     return not failedAny
 end
 
--- завантажує config.lua за прямим URL і повертає (cfg, base),
--- де base - директорія, в якій лежить сам config-файл (для відносних шляхів files)
 local function fetchConfigFromUrl(configUrl)
     local tmpPath = "/tmp_dep_config.lua"
     if not get(configUrl, tmpPath) then
@@ -175,8 +163,6 @@ local function fetchConfigFromUrl(configUrl)
     return cfg, base
 end
 
--- рекурсивно встановлює пакет за прямим URL на його _config.lua (для залежностей)
--- visited - таблиця вже оброблених URL, щоб не зациклитись при циклічних залежностях
 local function installFromConfigUrl(configUrl, visited)
     if visited[configUrl] then
         return true
@@ -234,7 +220,6 @@ local function installPackage(pkgName)
         return
     end
 
-    -- спочатку залежності, кожна може мати свої власні залежності (рекурсивно)
     local visited = {}
     if cfg.dependencies then
         for _, depUrl in ipairs(cfg.dependencies) do
@@ -245,7 +230,6 @@ local function installPackage(pkgName)
         end
     end
 
-    -- тепер файли самого пакету
     local ok = downloadPackageFiles(cfg, base)
 
     if ok then
@@ -255,13 +239,11 @@ local function installPackage(pkgName)
     end
 end
 
--- === додавання нового репозиторію ===
-
-local function addRepository()
-    write("Repo name: ")
-    local name = read()
-    write("Repo base URL: ")
-    local url = read()
+local function addRepository(name, url)
+    if not name or not url then
+        printError("Usage: pkg addrepo <name> <url>")
+        return
+    end
 
     if name == OFFICIAL_NAME then
         printError("This name is reserved for the official repository.")
@@ -277,26 +259,47 @@ local function addRepository()
     print("Repository '" .. name .. "' added.")
 end
 
+local function listRepos()
+    print("Configured repositories:")
+    for _, repo in ipairs(orderedRepoList()) do
+        local tag = repo.name == OFFICIAL_NAME and " (official)" or ""
+        print("  " .. repo.name .. tag)
+        print("    " .. repo.base)
+    end
+end
+
+-- === usage ===
+
+local function usage()
+    print("lightOS package manager")
+    print("")
+    print("Usage:")
+    print("  pkg install <name>")
+    print("  pkg addrepo <name> <url>")
+    print("  pkg repos")
+end
+
 -- === MAIN ===
 
 loadRepos()
 
-term.clear()
-term.setCursorPos(1, 1)
+local args = { ... }
+local subcommand = args[1]
 
-print("lightOS package manager")
-print(" 1. Install package by name")
-print(" 2. Add repository")
-write("> ")
+if subcommand == "install" then
+    local pkgName = args[2]
+    if not pkgName then
+        printError("Usage: pkg install <name>")
+    else
+        installPackage(pkgName)
+    end
 
-local choice = read()
+elseif subcommand == "addrepo" then
+    addRepository(args[2], args[3])
 
-if choice == "1" then
-    write("Package name: ")
-    local pkgName = read()
-    installPackage(pkgName)
-elseif choice == "2" then
-    addRepository()
+elseif subcommand == "repos" then
+    listRepos()
+
 else
-    print("Invalid choice.")
+    usage()
 end

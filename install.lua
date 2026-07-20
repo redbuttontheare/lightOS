@@ -49,10 +49,16 @@ local function get(file, savePath)
     return true
 end
 
+local function cls()
+    term.clear()
+    term.setCursorPos(1,1)
+end
+
 local function install_files()
-    fs.makeDir("lightOS")
-    fs.makeDir("bin")
-    fs.makeDir("lib")
+    fs.makeDir("/lightOS")
+    fs.makeDir("/bin")
+    fs.makeDir("/lib")
+    fs.makeDir("/tmp")
     get("pkg.lua", "/lightOS/pkg.lua")
     get("bm.lua", "/bm.lua")
     get("startup.lua", "/startup.lua")
@@ -65,15 +71,34 @@ local function install_files()
     get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
 
+    -- commands
+
+    get("bin/cd" "/bin/cd")
+    get("bin/clear", "/bin/clear")
+    get("bin/cls", "/bin/cls")
+    get("bin/kernel", "/bin/kernel")
+    get("bin/ls", "/bin/ls")
+    get("bin/reboot", "/bin/reboot")
+    get("bin/shutdown", "/bin/shutdown")
+    get("bin/which", "/bin/which")
+    get("bin/about", "/bin/about")
+
     -- libraries
 
-    get("lib/lapi.lua", "")
+    get("lib/lapi.lua", "/lib/lapi.lua")
+    get("lib/console.lua", "/lib/console.lua")
     
     -- gelaxy window meneger libs
 
     fs.makeDir("lib/gelaxy")
     get("lib/gelaxy/button.lua", "lib/gelaxy/button.lua")
     get("lib/gelaxy/window.lua", "lib/gelaxy/window.lua")
+    get("lib/gelaxy/checkbox.lua", "lib/gelaxy/checkbox.lua")
+    get("lib/gelaxy/textbox.lua", "lib/gelaxy/textbox.lua")
+
+    -- gelaxy bootloader
+
+    get("lightOS/gb.lua", "/lightOS/gb.lua")
 
     -- creating user config
 
@@ -84,7 +109,26 @@ local function install_files()
     ucfg = fs.open("lightOS/config.cfg", "w")
     ucfg.writeLine("usr=" .. usn)
     ucfg.writeLine("pcname=" .. pclabel)
-    ucfg.writeLine("ver=10.0")
+    ucfg.writeLine("ver=11.0")
+    ucfg.writeLine("kver=9.1")
+    ucfg.writeLine("gelaxy_ver=0.5")
+    ucfg.close()
+
+    print("lightOS installed")
+    print("Reboot now?")
+    write("[1-YES/0-no]")
+    rnqr = read()
+
+    if rnqr == "1" then
+        print("Rebooting...")
+        sleep(2)
+        os.reboot()
+    elseif rnqr == "0" then
+        return 0
+    else
+        print("Rebooting...")
+        sleep(2)
+        os.reboot()
 end
 
 local function licensepage()
@@ -110,7 +154,7 @@ local function licensepage()
     elseif lai == "1" then
         install_files()
     else
-        os.reboot
+        os.reboot()
     end
 end
 
@@ -132,7 +176,7 @@ end
 
 
 term.setBackgroundColor(baseblue)
-term.setTextColor(color.white)
+term.setTextColor(colors.white)
 cls()
 local text = "lightOS Installation Wizard"
 local w, h = term.getSize()
@@ -140,4 +184,12 @@ local x = math.floor((w - #text) / 2) + 1
 local y = 1
 term.setCursorPos(x, y)
 print(text)
+if fs.exists("/tmp") then
+    fs.delete("/tmp")
+end
+if pocket then
+    error("Didn't use phone to install")
+    read()
+    os.reboot()
+end
 do_setup()
