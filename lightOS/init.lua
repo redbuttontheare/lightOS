@@ -15,7 +15,7 @@ shell.setPath(":/bin:/lightOS:/lib")
 local lapi = dofile("/lib/lapi.lua")
 -- local autoexec = dofile("/lightOS/autoexec_runner.lua")
 -- local autoexec_tbl = dofile("/lightOS/autoexec.lua")
--- local cfg = lapi.loadConfig("/lightOS/config.cfg")
+local cfg = lapi.loadConfig("/lightOS/config.cfg")
 
 local version = cfg.ver
 _G.ligtos_ver = version

@@ -74,9 +74,12 @@ local function create_user(username)
         return false
     end
     wlightshl.writeLine("-- /home/" .. username .. "/.lightshl")
+    wlightshl.writeLine("local l = dofile(\"/lib/lapi.lua\")")
+    wlightshl.writeLine("local cfg = l.loadConfig(\"/lightOS/config.cfg\")")
+    wlightshl.writeLine("local lightos_ver = cfg.ver")
     wlightshl.writeLine("")
     wlightshl.writeLine("shell.setDir(\"/home/\" .. _G.currentUser)")
-    wlightshl.writeLine("print(\"lightOS v\" .. tostring(_G.lightos_ver))")
+    wlightshl.writeLine("print(\"lightOS v\" .. lightos_ver)")
     wlightshl.writeLine("print(\"gelaxy v\" .. tostring(_G.gelaxy_ver))")
     wlightshl.close()
 
