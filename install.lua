@@ -90,6 +90,7 @@ local function install_files()
 
     get("lib/lapi.lua", "/lib/lapi.lua")
     get("lib/console.lua", "/lib/console.lua")
+    get("lib/logger.lua", "/lib/logger.lua")
     
     -- gelaxy window meneger libs
 
@@ -124,6 +125,7 @@ local function install_files()
     term.setCursorPos(1,1)
     
     local console = dofile("/lib/console.lua")
+    local logger = dofile("/lib/logger.lua")
 
     console.print_info("Creating user directory..")
     console.print_ok("User directory created")
@@ -145,6 +147,12 @@ local function install_files()
     print(" ")
     console.print_yellow("Welcome to lightOS!")
     print(" ")
+
+    logger.create_logfile("/tmp/installer.log")
+    logger.write_title("/tmp/installer.log", "lightOS Installation log file")
+    logger.write_ok("/tmp/installer.log", "Version: 12.9")
+    logger.write_ok("/tmp/installer.log", "Created user: " .. usn)
+    logger.write_ok("/tmp/installer.log", "Superuser root")
 
     print("lightOS installed")
     print("Reboot now?")
