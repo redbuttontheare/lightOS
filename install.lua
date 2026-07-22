@@ -70,7 +70,8 @@ local function install_files()
     get("lightOS/init.lua", "/lightOS/init.lua")
     get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
-    get("lightOS/tm.lua", "/lightOS/tm.luas")
+    get("lightOS/tm.lua", "/lightOS/tm.lua")
+    get("other/licenset.txt", "/license.txt")
 
     -- commands
 
@@ -83,6 +84,7 @@ local function install_files()
     get("bin/which", "/bin/which")
     get("bin/about", "/bin/about")
     get("bin/usermgr", "/bin/usermgr")
+    get("bin/license", "/bin/license")
 
     -- libraries
 
@@ -109,7 +111,7 @@ local function install_files()
     pclabel = read()
     local pcfg = fs.open("lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
-    pcfg.writeLine("ver=12.0")
+    pcfg.writeLine("ver=12.5")
     pcfg.writeLine("kver=10.0")
     pcfg.writeLine("gelaxy_ver=0.5")
     pcfg.writeLine("usermgr_ver=0.1")
@@ -129,8 +131,15 @@ local function install_files()
 
 
     shell.run("/bin/usermgr", "add", usn)
+    shell.run("/bin/usermgr", "add", "root")
 
     console.print_ok("User config created")
+
+    console.print_info("Setting up root superuser...")
+    rsu = fs.open("/home/root/.lightshl", "w")
+    rsu.writeLine("shellApi.setDir(\"/\")")
+    rsu.close()
+
     console.print_green("Hello, " .. usn .. "!")
 
     print(" ")
@@ -159,16 +168,18 @@ end
 local function licensepage()
     term.setBackgroundColor(colors.green)
     term.clear()
-    term.setCursorPos(4,1)
+    term.setCursorPos(4,2)
 
     term.setBackgroundColor(colors.black)
     term.setTextColor(colors.yellow)
     print("Copyright (c) 2026 RedButton")
     term.setTextColor(colors.white)
-    term.setCursorPos(4,2)
-    print("                            ")
     term.setCursorPos(4,3)
-    print("The lightOS under GNU GPL v3")
+    print("                            ")
+    term.setCursorPos(4,4)
+    print("This program is free software: you can redistribute it and/or modify")
+    term.setCursorPos(4,5)
+    print("it under the terms of the GNU General Public License")
     term.setBackgroundColor(colors.green)
     term.setCursorPos(4,5)
     write("[1-yes/0-no]: ")

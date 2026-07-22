@@ -1,0 +1,15 @@
+local console = dofile("/lib/console.lua")
+local args = { ... }
+local subcommand = args[1]
+
+local function crfile(fileaname)
+    local file = fs.open(fileaname, "w")
+    file.writeLine("")
+    file.close()
+
+    console.print_ok("Touched file: " .. fileaname)
+end
+
+-- ===Main===
+
+crfile(subcommand)

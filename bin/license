@@ -1,0 +1,18 @@
+local filePath = "/license.txt"
+
+if not fs.exists(filePath) then
+    print("Read error 1")
+    return
+end
+
+local file = fs.open(filePath, "r")
+
+if file then
+    local content = file.readAll()
+    
+    file.close()
+    
+    print(content)
+else
+    print("Read error 2")
+end
