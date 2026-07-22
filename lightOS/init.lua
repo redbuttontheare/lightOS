@@ -13,18 +13,18 @@
 shell.setPath(":/bin:/lightOS:/lib")
 
 local lapi = dofile("/lib/lapi.lua")
-local autoexec = dofile("/lightOS/autoexec_runner.lua")
-local autoexec_tbl = dofile("/lightOS/autoexec.lua")
-local cfg = lapi.loadConfig("/lightOS/config.cfg")
+-- local autoexec = dofile("/lightOS/autoexec_runner.lua")
+-- local autoexec_tbl = dofile("/lightOS/autoexec.lua")
+-- local cfg = lapi.loadConfig("/lightOS/config.cfg")
 
-local ver = "v" .. cfg.ver
+local version = cfg.ver
+_G.ligtos_ver = version
 
 term.clear()
 term.setCursorPos(1,1)
-print("lightOS " .. ver)
 
-if cfg.autoexec ~= "0" then
-    local autoexec = dofile("/lightOS/autoexec_runner.lua")
-    local tbl = dofile("/lightOS/autoexec.lua")
-    autoexec(tbl)
-end
+-- if cfg.autoexec ~= "0" then
+--    local autoexec = dofile("/lightOS/autoexec_runner.lua")
+--    local tbl = dofile("/lightOS/autoexec.lua")
+--    autoexec(tbl)
+-- end

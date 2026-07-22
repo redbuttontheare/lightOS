@@ -1,0 +1,124 @@
+-- Copyright (C) 2026 redbuttontheare@gmail.com
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+-- GNU General Public License for more details.
+
+-- replace <file1> <file2> - міняє місцями вміст двох файлів
+-- (file1 отримує код file2, і навпаки)
+
+local args = { ... }
+local file1 = args[1]
+local file2 = args[2]
+
+if not file1 or not file2 then
+    printError("Usage: replace <file1> <file2>")
+    return
+end
+
+local path1 = shell.resolve(file1)
+local path2 = shell.resolve(file2)
+
+if not fs.exists(path1) then
+    printError("File not found: " .. path1)
+    return
+end
+
+if not fs.exists(path2) then
+    printError("File not found: " .. path2)
+    return
+end
+
+if fs.isDir(path1) then
+    printError("Cannot replace a directory: " .. path1)
+    return
+end
+
+if fs.isDir(path2) then
+    printError("Cannot replace a directory: " .. path2)
+    return
+end
+
+-- підтвердження, бо дія перезаписує обидва файли
+term.setTextColor(colors.orange)
+print("This will swap the contents of:")
+print("  " .. path1)
+print("  " .. path2)
+term.setTextColor(colors.white)
+write("Continue? (y/n): ")
+local answer = read()
+
+if answer ~= "y" and answer ~= "Y" then
+    print("Replace cancelled.")
+    return
+end
+
+-- читаємо обидва файли перед будь-яким записом,
+-- щоб не втратити вміст, якщо другий файл виявиться недоступний для читання
+local f1 = fs.open(path1, "r")
+if not f1 then
+    printError("Could not open for reading: " .. path1)
+    return
+end
+local content1 = f1.readAll()
+f1.close()
+
+local f2 = fs.open(path2, "r")
+if not f2 then
+    printError("Could not open for reading: " .. path2)
+    return
+end
+local content2 = f2.readAll()
+f2.close()
+
+-- перевірка синтаксису перед записом - не даємо зіпсувати робочий файл невалідним кодом
+local chunk1, err1 = load(content2)
+if not chunk1 then
+    printError("Warning: content from " .. path2 .. " has a syntax error:")
+    printError(tostring(err1))
+    write("Write anyway? (y/n): ")
+    local forceAnswer = read()
+    if forceAnswer ~= "y" and forceAnswer ~= "Y" then
+        print("Replace cancelled.")
+        return
+    end
+end
+
+local chunk2, err2 = load(content1)
+if not chunk2 then
+    printError("Warning: content from " .. path1 .. " has a syntax error:")
+    printError(tostring(err2))
+    write("Write anyway? (y/n): ")
+    local forceAnswer = read()
+    if forceAnswer ~= "y" and forceAnswer ~= "Y" then
+        print("Replace cancelled.")
+        return
+    end
+end
+
+-- записуємо назад, поміняні місцями
+local w1 = fs.open(path1, "w")
+if not w1 then
+    printError("Could not open for writing: " .. path1)
+    return
+end
+w1.write(content2)
+w1.close()
+
+local w2 = fs.open(path2, "w")
+if not w2 then
+    printError("Could not open for writing: " .. path2)
+    return
+end
+w2.write(content1)
+w2.close()
+
+term.setTextColor(colors.green)
+print("Swapped: " .. path1 .. " <-> " .. path2)
+term.setTextColor(colors.white)

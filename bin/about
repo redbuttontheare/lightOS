@@ -2,8 +2,12 @@ local lapi = dofile("/lib/lapi.lua")
 local cfg = lapi.loadConfig("/lightOS/config.cfg")
 local version = cfg.ver
 local kernel_ver = cfg.kver
+local gver = cfg.gelaxy_ver
+local uver = cfg.usermgr_ver
 
 print("about lightOS")
 print("lightOS version: " .. version)
 print("Kernel: light kernel " .. kernel_ver)
+print("Gelaxy ui: version " .. gver)
 print("BIOS: lightOS UEFI")
+print("usermgr version: " .. uver)

@@ -70,18 +70,19 @@ local function install_files()
     get("lightOS/init.lua", "/lightOS/init.lua")
     get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
+    get("lightOS/tm.lua", "/lightOS/tm.luas")
 
     -- commands
 
-    get("bin/cd" "/bin/cd")
+    get("bin/cd", "/bin/cd")
     get("bin/clear", "/bin/clear")
     get("bin/cls", "/bin/cls")
-    get("bin/kernel", "/bin/kernel")
     get("bin/ls", "/bin/ls")
     get("bin/reboot", "/bin/reboot")
     get("bin/shutdown", "/bin/shutdown")
     get("bin/which", "/bin/which")
     get("bin/about", "/bin/about")
+    get("bin/usermgr", "/bin/usermgr")
 
     -- libraries
 
@@ -91,10 +92,10 @@ local function install_files()
     -- gelaxy window meneger libs
 
     fs.makeDir("lib/gelaxy")
-    get("lib/gelaxy/button.lua", "lib/gelaxy/button.lua")
-    get("lib/gelaxy/window.lua", "lib/gelaxy/window.lua")
-    get("lib/gelaxy/checkbox.lua", "lib/gelaxy/checkbox.lua")
-    get("lib/gelaxy/textbox.lua", "lib/gelaxy/textbox.lua")
+    get("lib/gelaxy/button.lua", "/lib/gelaxy/button.lua")
+    get("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
+    get("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
+    get("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
 
     -- gelaxy bootloader
 
@@ -106,13 +107,44 @@ local function install_files()
     usn = read()
     write("Label your pc: ")
     pclabel = read()
-    ucfg = fs.open("lightOS/config.cfg", "w")
+    local pcfg = fs.open("lightOS/config.cfg", "w")
+    pcfg.writeLine("pcname=" .. pclabel)
+    pcfg.writeLine("ver=12.0")
+    pcfg.writeLine("kver=10.0")
+    pcfg.writeLine("gelaxy_ver=0.5")
+    pcfg.writeLine("usermgr_ver=0.1")
+    pcfg.close()
+
+    fs.makeDir("/home")
+    fs.makeDir("/home/" .. usn)
+
+    term.setBackgroundColor(colors.black)
+    term.clear()
+    term.setCursorPos(1,1)
+    
+    local console = dofile("/lib/console.lua")
+
+    console.print_info("Creating user directory..")
+    console.print_ok("User directory created")
+    console.print_info("Creating user config..")
+
+    local ucfg = fs.open("/home/" .. usn .. ".user", "w")
     ucfg.writeLine("usr=" .. usn)
-    ucfg.writeLine("pcname=" .. pclabel)
-    ucfg.writeLine("ver=11.0")
-    ucfg.writeLine("kver=9.1")
-    ucfg.writeLine("gelaxy_ver=0.5")
     ucfg.close()
+    console.print_ok("User config created")
+    console.print_green("Hello, " .. usn .. "!")
+
+    local wlightshl = fs.open("/home/" .. usn .. "/.lightshl", "w")
+    wlightshl.writeLine("-- /home/.../.lightshl")
+    wlightshl.writeLine("")
+    wlightshl.writeLine("shellApi.setDir(\"/home/\" .. _G.currentUser)")
+    wlightshl.writeLine("print(\"lightOS v\" .. _G.lightos_ver)")
+    wlightshl.writeLine("print(\"gelaxy v\" .. _G.gelaxy_ver)")
+    wlightshl.close()
+
+    print(" ")
+    console.print_yellow("Welcome to lightOS!")
+    print(" ")
 
     print("lightOS installed")
     print("Reboot now?")
@@ -124,11 +156,13 @@ local function install_files()
         sleep(2)
         os.reboot()
     elseif rnqr == "0" then
+        _G.currentUser = usn
         return 0
     else
         print("Rebooting...")
         sleep(2)
         os.reboot()
+    end
 end
 
 local function licensepage()

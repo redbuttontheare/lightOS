@@ -10,9 +10,6 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
-local lapi = dofile("/lib/lapi.lua")
-
-local burmalda = lapi.loadConfig("/lightOS/config.cfg")
-local user = burmalda.usr
+local user = _G.currentUser or "root"
 
 print("Hello, " .. user .. "!")

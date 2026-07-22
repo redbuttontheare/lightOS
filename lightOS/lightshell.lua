@@ -10,9 +10,7 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 -- GNU General Public License for more details.
 
--- lightOS custom shell (з gelaxy-заголовком)
 local lapi = dofile("/lib/lapi.lua")
-local gelaxy = dofile("/lib/gelaxy/window.lua")
 
 local bExit = false
 local sDir = shell and shell.dir() or ""
@@ -123,16 +121,18 @@ end
 _G.shell = shellApi
 
 
-gelaxy.createWindow("lightOS Shell", colors.black, nil)
+local lightshl_path = "/home/" .. _G.currentUser .. "/.lightshl"
+local run_lightshl = loadfile(lightshl_path)
+
+pcall(run_lightshl)
 
 local function printPrompt()
     local burmalda = lapi.loadConfig("/lightOS/config.cfg")
     local pcname = burmalda.pcname or "unknown"
-    local usr = burmalda.usr or "unknown"
+    local usr = _G.currentUser or "root"
     local dir = shellApi.dir()
     if dir == "" then dir = "/" end
 
-    -- 1 рядок: жовтий, pcname==директорія:
     term.setTextColor(colors.orange)
     print(pcname .. "==" .. dir .. ":")
 

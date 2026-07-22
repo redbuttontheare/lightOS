@@ -1,7 +1,7 @@
 return {
     name = "lua-tools",
     author = "lightOS Team",
-    ver = "0.1",
+    ver = "0.3",
     type = "cmd",
-    files = { "lua-tools/flash.lua", "lua-tools/deps.lua" }
+    files = { "lua-tools/flash", "lua-tools/deps", "lua-tools/replace" }
 }

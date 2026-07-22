@@ -1,0 +1,62 @@
+local lapi = dofile("/lib/lapi.lua")
+local args = { ... }
+local subcommand = args[1]
+
+local function login() -- the login screen
+    term.clear()
+    term.setCursorPos(20,1)
+    print("Enter username to log in")
+    term.setCursorPos(20, 2)
+    term.setTextColor(colors.yellow)
+    write("usermgr> ")
+    term.setTextColor(colors.white)
+    usnl = read()
+    local usrcfg = lapi.loadConfig("/home/" .. usnl .. "/.user")
+    _G.currentUser = usnl
+    shell.setDir("/home/" .. usnl)
+    shell.run("/lightOS/lightshell.lua")
+end
+
+local function create_user(username) -- create a user with basic .lightshl
+    fs.makeDir("/home/" .. username)
+
+    local ucfg1 = fs.open("/home/" .. username .. "/.user", "w")
+    ucfg1.writeLine("usr=" .. username)
+    ucfg1.close()
+
+    local wlightshl = fs.open("/home/" .. username .. "/.lightshl", "w")
+    wlightshl.writeLine("-- /home/.../.lightshl")
+    wlightshl.writeLine("")
+    wlightshl.writeLine("shellApi.setDir(\"/home/\" .. _G.currentUser)")
+    wlightshl.writeLine("print(\"lightOS v\" .. _G.lightos_ver)")
+    wlightshl.writeLine("print(\"gelaxy v\" .. _G.gelaxy_ver)")
+    wlightshl.close()
+end
+
+local function currusr() -- The current user
+    print(_G.currentUser)
+end
+
+-- ====Main====
+
+if subcommand == "login" then
+    login()
+elseif subcommand == "--version" then
+    local pcfg = lapi.loadConfig("/lightOS/config.cfg")
+    local ver = pcfg.usermgr_ver
+    print("GNU lightOS usermgr v" .. ver)
+    print("by redbuttontheare@github.com")
+elseif subcommand == "curusr" then
+    currusr()
+elseif subcommand == "add" then
+    local console = dofile("/lib/console.lua")
+    local usnametosend = args[2]
+    create_user(usnametosend)
+    console.print_ok("Created user with name: " .. usnametosend)
+else
+    print("Usage:")
+    print("usermgr login -- the login window")
+    print("usermgr --version -- print usermgr version")
+    print("usermgr curusr -- displays curren user name")
+    print("usermgr add <username> -- create a user")
+end

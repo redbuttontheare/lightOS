@@ -55,7 +55,7 @@ while true do
     elseif input == "3" then
         os.reboot()
     elseif input == "2" then
-        term.setBackgroundColor(colros.black)
+        term.setBackgroundColor(colors.black)
         term.clear()
         term.setCursorPos(1,1)
         console.print_info("Downloading installation script...")
