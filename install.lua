@@ -116,7 +116,6 @@ local function install_files()
     pcfg.close()
 
     fs.makeDir("/home")
-    fs.makeDir("/home/" .. usn)
 
     term.setBackgroundColor(colors.black)
     term.clear()
@@ -128,19 +127,11 @@ local function install_files()
     console.print_ok("User directory created")
     console.print_info("Creating user config..")
 
-    local ucfg = fs.open("/home/" .. usn .. ".user", "w")
-    ucfg.writeLine("usr=" .. usn)
-    ucfg.close()
+
+    shell.run("/bin/usermgr", "add", usn)
+
     console.print_ok("User config created")
     console.print_green("Hello, " .. usn .. "!")
-
-    local wlightshl = fs.open("/home/" .. usn .. "/.lightshl", "w")
-    wlightshl.writeLine("-- /home/.../.lightshl")
-    wlightshl.writeLine("")
-    wlightshl.writeLine("shellApi.setDir(\"/home/\" .. _G.currentUser)")
-    wlightshl.writeLine("print(\"lightOS v\" .. _G.lightos_ver)")
-    wlightshl.writeLine("print(\"gelaxy v\" .. _G.gelaxy_ver)")
-    wlightshl.close()
 
     print(" ")
     console.print_yellow("Welcome to lightOS!")
