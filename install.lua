@@ -73,6 +73,7 @@ local function install_files()
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
     get("other/license.txt", "/license.txt")
     get("img/about.nfp", "/img/about.nfp")
+    get("lightOS/kernel.lua", "/lightOS/kernel.lua")
 
     -- commands
 
