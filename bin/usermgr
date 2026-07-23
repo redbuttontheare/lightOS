@@ -43,8 +43,7 @@ local function login()
     term.setCursorPos(1,1)
     _G.currentUser = usnl
     shell.setDir("/home/" .. usnl)
-    shell.run("/lightOS/init.lua")
-    shell.run("/lightOS/lightshell.lua")
+    shell.run("/lightOS/kernel.lua")
 end
 
 local function create_user(username)

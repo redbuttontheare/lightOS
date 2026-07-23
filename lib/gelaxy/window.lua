@@ -1,4 +1,4 @@
--- Copyright (C) 2026 redbuttontheare@gmail.com
+ґ-- Copyright (C) 2026 redbuttontheare@gmail.com
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@ local wm = {}
 local nativeTerm = term.current()
 local termW, termH = nativeTerm.getSize()
 
-local tabs = {} 
+local tabs = {}
 local focusedIndex = nil
 
 
@@ -100,7 +100,7 @@ local function focusTab(index)
     end
 
     focusedIndex = index
-    tabs[focusedIndex].win.setVisible(true) 
+    tabs[focusedIndex].win.setVisible(true)
 
     drawTabBar()
 end
@@ -189,12 +189,25 @@ function wm.run()
                 handleTabBarClick(x)
                 goto continueLoop
             end
-        end
 
-        if INPUT_EVENTS[eventName] then
+            if INPUT_EVENTS[eventName] then
+                local tab = tabs[focusedIndex]
+                if tab then
+                    local customEvData = { table.unpack(evData) }
+                    if eventName:sub(1, 5) == "mouse" then
+                        customEvData[4] = customEvData[4] - 1
+                    end
+                    resumeTab(tab, customEvData)
+                end
+            end
+        elseif INPUT_EVENTS[eventName] then
             local tab = tabs[focusedIndex]
             if tab then
-                resumeTab(tab, evData)
+                local customEvData = { table.unpack(evData) }
+                if eventName:sub(1, 5) == "mouse" then
+                    customEvData[4] = customEvData[4] - 1
+                end
+                resumeTab(tab, customEvData)
             end
         else
             for _, tab in ipairs(tabs) do
@@ -205,7 +218,7 @@ function wm.run()
         if tabs[focusedIndex] and tabs[focusedIndex].dead then
             if not focusNextAlive() then
                 drawTabBar()
-                return 
+                return
             end
         end
 

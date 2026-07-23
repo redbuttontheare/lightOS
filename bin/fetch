@@ -1,0 +1,79 @@
+local lapi = dofile("/lib/lapi.lua")
+local cfg = pcall(lapi.loadConfig, "/lightOS/config.cfg") and lapi.loadConfig("/lightOS/config.cfg") or {}
+
+local pcname = cfg.pcname or "pc"
+local usr = _G.currentUser or "root"
+local free_space = fs.getFreeSpace("/")
+local ver = cfg.ver
+local kver = cfg.kver
+
+term.clear()
+term.setCursorPos(1,1)
+
+-- 1
+term.setTextColor(colors.orange)
+write("  _ _       ")
+term.setTextColor(colors.yellow)
+write(usr)
+term.setTextColor(colors.white)
+print("@" .. pcname)
+
+-- 2
+term.setTextColor(colors.orange)
+write(" | (_)      ")
+term.setTextColor(colors.white)
+print("-------------------")
+
+-- 3
+term.setTextColor(colors.orange)
+write(" | |_  __ _ ")
+term.setTextColor(colors.yellow)
+write(" OS: ")
+term.setTextColor(colors.white)
+print("lightOS v" .. ver)
+
+-- 4
+term.setTextColor(colors.orange)
+write(" | | |/ _` |")
+term.setTextColor(colors.yellow)
+write(" Host: ")
+term.setTextColor(colors.white)
+print("Advanced Computer")
+
+-- Рядок 5
+term.setTextColor(colors.orange)
+write(" | | | (_| |")
+term.setTextColor(colors.yellow)
+write(" Kernel: ")
+term.setTextColor(colors.white)
+print("lightKernel v" .. kver)
+
+-- 6
+term.setTextColor(colors.orange)
+write(" |_|_|\\__, |")
+term.setTextColor(colors.yellow)
+write(" Shell: ")
+term.setTextColor(colors.white)
+print("lightshell.lua")
+
+-- 7
+term.setTextColor(colors.orange)
+write("       __/ |")
+term.setTextColor(colors.yellow)
+write(" Disk free: ")
+term.setTextColor(colors.white)
+print(string.format("%.2f KB", free_space / 1024))
+
+-- 8
+term.setTextColor(colors.orange)
+print("      |___/ ")
+print("")
+
+-- colors pallete
+local color_list = { colors.red, colors.green, colors.yellow, colors.blue, colors.magenta, colors.cyan, colors.white }
+for _, col in ipairs(color_list) do
+    term.setBackgroundColor(col)
+    write("   ")
+end
+term.setBackgroundColor(colors.black)
+print("")

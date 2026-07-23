@@ -112,7 +112,7 @@ local function install_files()
     pclabel = read()
     local pcfg = fs.open("lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
-    pcfg.writeLine("ver=13.0")
+    pcfg.writeLine("ver=13.2")
     pcfg.writeLine("kver=10.0")
     pcfg.writeLine("gelaxy_ver=0.6")
     pcfg.writeLine("usermgr_ver=0.3")
@@ -208,9 +208,6 @@ local function do_setup()
     end
 
 end
-    
-
-
 
 term.setBackgroundColor(baseblue)
 term.setTextColor(colors.white)

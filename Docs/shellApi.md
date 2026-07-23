@@ -1,5 +1,5 @@
 # shellApi Documentation
-## shellApi - this simple analog(shell.option) but for lightshell
+## shellApi - A simple analogue of shell API, tailored for lightshell
 
 ### shellApi path variable
 #### you can set path to run programs from it path

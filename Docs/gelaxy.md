@@ -27,12 +27,17 @@ closeButton:draw()
 
 local running = true
 while running do
-    local event, button, cx, cy = os.pullEvent("mouse_click")
+    local evData = { os.pullEvent() }
+    local event = evData[1]
     
-    if closeButton:handleClick(cx, cy) then
-        running = false
+    if event == "mouse_click" then
+        local cx, cy = evData[3], evData[4]
+        if closeButton:handleClick(cx, cy) then
+            running = false 
+        end
     end
 end
+
 ```
 
 ### Checkboxes
