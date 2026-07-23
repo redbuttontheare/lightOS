@@ -1,13 +1,37 @@
 local lapi = dofile("/lib/lapi.lua")
+local Button = dofile("/lib/gelaxy/button.lua")
 local cfg = lapi.loadConfig("/lightOS/config.cfg")
 local version = cfg.ver
-local kernel_ver = cfg.kver
 local gver = cfg.gelaxy_ver
-local uver = cfg.usermgr_ver
 
+local function launchShell()
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.white)
+    term.clear()
+    term.setCursorPos(1, 1)
+    shell.run("/lightOS/lightshell.lua")
+end
+
+local bg = paintutils.loadImage("/img/about.nfp")
+local closeButton = Button.new(35, 5, 1, "X", colors.red, colors.white, launchShell)
+paintutils.drawImage(bg, 1, 1)
+term.setBackgroundColor(colors.white)
+term.setTextColor(colors.black)
+term.setCursorPos(15,5)
 print("about lightOS")
-print("lightOS version: " .. version)
-print("Kernel: light kernel " .. kernel_ver)
-print("Gelaxy ui: version " .. gver)
-print("BIOS: lightOS UEFI")
-print("usermgr version: " .. uver)
+term.setCursorPos(15, 7)
+print("lightOS " .. version)
+term.setCursorPos(15, 8)
+print("Gelaxy " .. gver)
+
+
+closeButton:draw()
+
+local running = true
+while running do
+    local event, button, cx, cy = os.pullEvent("mouse_click")
+    
+    if closeButton:handleClick(cx, cy) then
+        running = false
+    end
+end

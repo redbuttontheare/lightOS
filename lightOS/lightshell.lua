@@ -120,8 +120,8 @@ end
 
 _G.shell = shellApi
 
-
-local lightshl_path = "/home/" .. _G.currentUser .. "/.lightshl"
+local usrn = _G.currentUser or "root"
+local lightshl_path = "/home/" .. usrn .. "/.lightshl"
 local run_lightshl = loadfile(lightshl_path)
 
 pcall(run_lightshl)

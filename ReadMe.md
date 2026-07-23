@@ -3,7 +3,7 @@
 
 ## To install the lightOS
 ```
-wget run https://raw.githubusercontent.com/redbuttontheare/lightOS/refs/heads/main/install.lua
+pastebin run 7pwFMZW8
 ```
 
 ### The lightOS under GNU GPL License version 3.0 or above you can read license in file License

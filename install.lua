@@ -59,6 +59,7 @@ local function install_files()
     fs.makeDir("/bin")
     fs.makeDir("/lib")
     fs.makeDir("/tmp")
+    fs.makeDir("/img")
     get("pkg.lua", "/lightOS/pkg.lua")
     get("bm.lua", "/bm.lua")
     get("startup.lua", "/startup.lua")
@@ -70,8 +71,8 @@ local function install_files()
     get("lightOS/init.lua", "/lightOS/init.lua")
     get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
-    get("lightOS/tm.lua", "/lightOS/tm.lua")
     get("other/licenset.txt", "license.txt")
+    get("img/about.nfp", "/img/about.nfp")
 
     -- commands
 
