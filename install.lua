@@ -43,7 +43,6 @@ local function get(file, savePath)
     end
     
     f.write(code)
-    print("To: " .. savePath)
     f.close()
     
     return true
@@ -139,6 +138,9 @@ local function install_files()
     term.setCursorPos(1,1)
     
     local console = dofile("/lib/console.lua")
+    local gelaxy_windows = dofile("/lib/gelaxy/window.lua")
+
+    _G.gelaxy_w = gelaxy_windows
 
     console.print_info("Creating user directory..")
     console.print_ok("User directory created")
@@ -158,25 +160,13 @@ local function install_files()
     console.print_green("Hello, " .. usn .. "!")
 
     print(" ")
-    console.print_yellow("Welcome to lightOS!")
+    console.print_yellow("Please complete second stage in tab: 'stage 2'")
     print(" ")
 
-    print("lightOS installed")
-    print("Reboot now?")
-    write("[1-YES/0-no]: ")
-    rnqr = read()
+    gelaxy_windows.createTab()
 
-    if rnqr == "1" then
-        print("Rebooting...")
-        sleep(2)
-        os.reboot()
-    elseif rnqr == "0" then
-        _G.currentUser = usn
-        return 0
-    else
-        print("Rebooting...")
-        sleep(2)
-        os.reboot()
+    while true do
+        read()
     end
 end
 
@@ -223,6 +213,11 @@ local function do_setup()
 
 end
 
+-- ===Main===
+print("Downloading Installer...")
+
+sleep(4)
+
 term.setBackgroundColor(baseblue)
 term.setTextColor(colors.white)
 cls()
@@ -236,7 +231,8 @@ if fs.exists("/tmp") then
     fs.delete("/tmp")
 end
 if pocket then
-    error("Didn't use phone to install")
+    print("lightOS not supports phones")
+    print("press enter to reboot")
     read()
     os.reboot()
 end
