@@ -15,7 +15,7 @@ local lapi = dofile("/lib/lapi.lua")
 local bExit = false
 local sDir = shell and shell.dir() or ""
 local sPath = ".:/lightOS:/bin:/apps:/lib"
-local tAliases = { ls = "list", dir = "list" }
+local tAliases = { list = "ls", dir = "ls", cls = "clear" }
 
 local shellApi = {}
 

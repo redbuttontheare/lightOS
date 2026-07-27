@@ -16,115 +16,22 @@ local nativeTerm = term.current()
 local termW, termH = nativeTerm.getSize()
 
 local tabs = {}
-local focusedIndex = nil
+local nextId = 1
+local focusedId = nil
 
-
-local function wrapProgram(program)
-    return coroutine.create(function()
-        if type(program) == "string" then
-            local ok, err = pcall(dofile, program)
-            if not ok then
-                printError(tostring(err))
-            end
-        elseif type(program) == "function" then
-            local ok, err = pcall(program)
-            if not ok then
-                printError(tostring(err))
-            end
-        else
-            while true do
-                os.pullEvent()
-            end
-        end
-    end)
-end
-
-function wm.createTab(name, program)
-    local win = window.create(nativeTerm, 1, 2, termW, termH - 1, false)
-
-    local tab = {
-        name = name,
-        co = wrapProgram(program),
-        win = win,
-        filter = nil,
-        dead = false,
-    }
-
-    table.insert(tabs, tab)
-
-    if not focusedIndex then
-        focusedIndex = #tabs
-    end
-
-    return #tabs
-end
-
-
-local function drawTabBar()
-    nativeTerm.setCursorPos(1, 1)
-    nativeTerm.setBackgroundColor(colors.black)
-    nativeTerm.clearLine()
-
-    local x = 1
+local function findIndexById(id)
     for i, tab in ipairs(tabs) do
-        local label = " " .. tab.name .. " "
-
-        if tab.dead then
-            nativeTerm.setBackgroundColor(colors.black)
-            nativeTerm.setTextColor(colors.red)
-        elseif i == focusedIndex then
-            nativeTerm.setBackgroundColor(colors.white)
-            nativeTerm.setTextColor(colors.black)
-        else
-            nativeTerm.setBackgroundColor(colors.gray)
-            nativeTerm.setTextColor(colors.lightGray)
-        end
-
-        nativeTerm.setCursorPos(x, 1)
-        nativeTerm.write(label)
-
-        tab.x1 = x
-        tab.x2 = x + #label - 1
-        x = x + #label
-    end
-
-    nativeTerm.setBackgroundColor(colors.black)
-    nativeTerm.setTextColor(colors.white)
-end
-
-local function focusTab(index)
-    if not tabs[index] or index == focusedIndex then return end
-
-    if focusedIndex and tabs[focusedIndex] then
-        tabs[focusedIndex].win.setVisible(false)
-    end
-
-    focusedIndex = index
-    tabs[focusedIndex].win.setVisible(true)
-
-    drawTabBar()
-end
-
-local function focusNextAlive()
-    for i = 1, #tabs do
-        if not tabs[i].dead then
-            focusTab(i)
-            return true
+        if tab.id == id then
+            return i
         end
     end
-    return false
+    return nil
 end
 
-local function handleTabBarClick(x)
-    for i, tab in ipairs(tabs) do
-        if x >= tab.x1 and x <= tab.x2 then
-            focusTab(i)
-            return
-        end
-    end
+local function findTabById(id)
+    local i = findIndexById(id)
+    return i and tabs[i]
 end
-
-
 
 local function resumeTab(tab, evData)
     if tab.dead then return end
@@ -154,6 +61,150 @@ local function resumeTab(tab, evData)
     end
 end
 
+local function wrapProgram(program, selfId)
+    return coroutine.create(function()
+        if type(program) == "string" then
+            _G.currentTabId = selfId
+            local ok, err = pcall(dofile, program)
+            if not ok then
+                printError(tostring(err))
+            end
+        elseif type(program) == "function" then
+            local ok, err = pcall(program, selfId)
+            if not ok then
+                printError(tostring(err))
+            end
+        else
+            while true do
+                os.pullEvent()
+            end
+        end
+    end)
+end
+
+function wm.createTab(name, program)
+    local win = window.create(nativeTerm, 1, 2, termW, termH - 1, false)
+
+    local id = nextId
+    nextId = nextId + 1
+
+    local tab = {
+        id = id,
+        name = name,
+        co = wrapProgram(program, id),
+        win = win,
+        filter = nil,
+        dead = false,
+    }
+
+    table.insert(tabs, tab)
+
+    resumeTab(tab, {})
+
+    if not focusedId then
+        wm.focusTab(id)
+    end
+
+    return id
+end
+
+local function drawTabBar()
+    nativeTerm.setCursorPos(1, 1)
+    nativeTerm.setBackgroundColor(colors.black)
+    nativeTerm.clearLine()
+
+    local x = 1
+    for _, tab in ipairs(tabs) do
+        local label = " " .. tab.name .. " "
+
+        if tab.dead then
+            nativeTerm.setBackgroundColor(colors.black)
+            nativeTerm.setTextColor(colors.red)
+        elseif tab.id == focusedId then
+            nativeTerm.setBackgroundColor(colors.white)
+            nativeTerm.setTextColor(colors.black)
+        else
+            nativeTerm.setBackgroundColor(colors.gray)
+            nativeTerm.setTextColor(colors.lightGray)
+        end
+
+        nativeTerm.setCursorPos(x, 1)
+        nativeTerm.write(label)
+
+        tab.x1 = x
+        tab.x2 = x + #label - 1
+        x = x + #label
+    end
+
+    nativeTerm.setBackgroundColor(colors.black)
+    nativeTerm.setTextColor(colors.white)
+end
+
+function wm.focusTab(id)
+    local tab = findTabById(id)
+    if not tab or id == focusedId then return end
+
+    local oldTab = focusedId and findTabById(focusedId)
+    if oldTab then
+        oldTab.win.setVisible(false)
+    end
+
+    focusedId = id
+    tab.win.setVisible(true)
+
+    drawTabBar()
+end
+
+local function focusNextAlive(excludeId)
+    for _, tab in ipairs(tabs) do
+        if not tab.dead and tab.id ~= excludeId then
+            wm.focusTab(tab.id)
+            return true
+        end
+    end
+    focusedId = nil
+    return false
+end
+
+function wm.closeTab(id)
+    local index = findIndexById(id)
+    if not index then return false end
+
+    local tab = tabs[index]
+    tab.win.setVisible(false)
+    tab.dead = true
+
+    table.remove(tabs, index)
+
+    if focusedId == id then
+        focusedId = nil
+        focusNextAlive(id)
+    end
+
+    drawTabBar()
+    return true
+end
+
+local function handleTabBarClick(x)
+    for _, tab in ipairs(tabs) do
+        if x >= tab.x1 and x <= tab.x2 then
+            wm.focusTab(tab.id)
+            return
+        end
+    end
+end
+
+local function translateForTab(evData)
+    local name = evData[1]
+    if name == "mouse_click" or name == "mouse_up" or name == "mouse_drag" or name == "mouse_scroll" then
+        local copy = {}
+        for i, v in ipairs(evData) do copy[i] = v end
+        copy[4] = copy[4] - 1  -- y: компенсація рядка панелі вкладок
+        return copy
+    end
+    return evData
+end
+
 local INPUT_EVENTS = {
     mouse_click = true,
     mouse_up = true,
@@ -171,12 +222,6 @@ function wm.run()
         return
     end
 
-    tabs[focusedIndex].win.setVisible(true)
-    drawTabBar()
-
-    for _, tab in ipairs(tabs) do
-        resumeTab(tab, {})
-    end
     drawTabBar()
 
     while true do
@@ -189,25 +234,12 @@ function wm.run()
                 handleTabBarClick(x)
                 goto continueLoop
             end
+        end
 
-            if INPUT_EVENTS[eventName] then
-                local tab = tabs[focusedIndex]
-                if tab then
-                    local customEvData = { table.unpack(evData) }
-                    if eventName:sub(1, 5) == "mouse" then
-                        customEvData[4] = customEvData[4] - 1
-                    end
-                    resumeTab(tab, customEvData)
-                end
-            end
-        elseif INPUT_EVENTS[eventName] then
-            local tab = tabs[focusedIndex]
+        if INPUT_EVENTS[eventName] then
+            local tab = focusedId and findTabById(focusedId)
             if tab then
-                local customEvData = { table.unpack(evData) }
-                if eventName:sub(1, 5) == "mouse" then
-                    customEvData[4] = customEvData[4] - 1
-                end
-                resumeTab(tab, customEvData)
+                resumeTab(tab, translateForTab(evData))
             end
         else
             for _, tab in ipairs(tabs) do
@@ -215,10 +247,15 @@ function wm.run()
             end
         end
 
-        if tabs[focusedIndex] and tabs[focusedIndex].dead then
-            if not focusNextAlive() then
-                drawTabBar()
-                return
+        if focusedId then
+            local tab = findTabById(focusedId)
+            if not tab or tab.dead then
+                if not focusNextAlive(focusedId) then
+                    drawTabBar()
+                    if #tabs == 0 then
+                        return
+                    end
+                end
             end
         end
 

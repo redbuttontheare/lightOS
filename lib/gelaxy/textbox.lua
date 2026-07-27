@@ -13,22 +13,18 @@
 local textbox = {}
 textbox.__index = textbox
 
--- textbox.new(x, y, width, initialText, on_change_function)
--- on_change_function(text) викликається при кожній зміні вмісту (введення/видалення)
 function textbox.new(x, y, width, initialText, on_change_function)
     local self = setmetatable({}, textbox)
     self.x = x
     self.y = y
     self.width = width
     self.text = initialText or ""
-    self.cursorPos = #self.text  -- позиція курсора всередині self.text (0 = перед першим символом)
+    self.cursorPos = #self.text
     self.focused = false
     self.onChange = on_change_function or function() end
     return self
 end
 
--- малює поле: рамка кольором, текст всередині (обрізаний/прокручений під ширину),
--- і курсор (миготливий символ), якщо в фокусі
 function textbox:draw()
     term.setCursorPos(self.x, self.y)
 
@@ -38,7 +34,6 @@ function textbox:draw()
     term.setBackgroundColor(bg)
     term.setTextColor(fg)
 
-    -- прокрутка: показуємо кінець тексту, якщо він довший за ширину поля
     local visibleText = self.text
     if #visibleText > self.width then
         visibleText = visibleText:sub(#visibleText - self.width + 1)
@@ -50,7 +45,6 @@ function textbox:draw()
     term.setBackgroundColor(colors.black)
 
     if self.focused then
-        -- позиціонуємо курсор системи термінала на місце введення
         local cursorX = self.x + math.min(self.cursorPos, self.width - 1)
         term.setCursorPos(cursorX, self.y)
         term.setCursorBlink(true)
@@ -78,7 +72,6 @@ function textbox:handleClick(cx, cy)
     return false
 end
 
--- викликати при події "char" (введення символу), тільки коли поле в фокусі
 function textbox:handleChar(char)
     if not self.focused then return end
 
@@ -90,8 +83,6 @@ function textbox:handleChar(char)
     self.onChange(self.text)
 end
 
--- викликати при події "key" (спецклавіші), тільки коли поле в фокусі
--- keys.backspace, keys.left, keys.right, keys.enter, keys.home, keys["end"]
 function textbox:handleKey(key)
     if not self.focused then return end
 

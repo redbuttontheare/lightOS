@@ -1,4 +1,4 @@
-# lightOS v13.2
+# lightOS v14
 ## For ComputerCraft and it fork CC: Tweaked
 
 <p align="center">
@@ -11,11 +11,19 @@
 ```
 pastebin run 7pwFMZW8
 ```
-# Tabs update!
+# In last update
 <p align="center">
-  <img src="screenshots/tabsUpdate.png" width="30%" />
+  <img src="screenshots/InternetUpdate2.png" width="30%" />
+  <img src="screenshots/InternetUpdate2ServerPC.png" width="30%" />
 </p>
 
+
+## How to create a user?
+```lua
+usermgr add user
+-- Delete
+usermgr del user
+```
 
 ### The lightOS under GNU GPL License version 3.0 or above you can read license in file License
 

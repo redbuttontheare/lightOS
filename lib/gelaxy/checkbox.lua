@@ -13,8 +13,6 @@
 local checkbox = {}
 checkbox.__index = checkbox
 
--- checkbox.new(x, y, label, checked, on_toggle_function)
--- on_toggle_function(newState) викликається при кожній зміні стану
 function checkbox.new(x, y, label, checked, on_toggle_function)
     local self = setmetatable({}, checkbox)
     self.x = x
@@ -25,7 +23,6 @@ function checkbox.new(x, y, label, checked, on_toggle_function)
     return self
 end
 
--- ширина поля [x] або [ ] завжди 3 символи, потім пробіл і текст мітки
 function checkbox:draw()
     term.setCursorPos(self.x, self.y)
 

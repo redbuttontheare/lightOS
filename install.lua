@@ -60,6 +60,7 @@ local function install_files()
     fs.makeDir("/lib")
     fs.makeDir("/tmp")
     fs.makeDir("/img")
+    fs.makeDir("/apps")
     get("pkg.lua", "/lightOS/pkg.lua")
     get("bm.lua", "/bm.lua")
     get("startup.lua", "/startup.lua")
@@ -72,26 +73,26 @@ local function install_files()
     get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     get("lightOS/rcm.lua", "/lightOS/rcm.lua")
     get("other/license.txt", "/license.txt")
-    get("img/about.nfp", "/img/about.nfp")
     get("lightOS/kernel.lua", "/lightOS/kernel.lua")
 
     -- commands
 
     get("bin/cd", "/bin/cd")
     get("bin/clear", "/bin/clear")
-    get("bin/cls", "/bin/cls")
     get("bin/ls", "/bin/ls")
     get("bin/reboot", "/bin/reboot")
     get("bin/shutdown", "/bin/shutdown")
     get("bin/which", "/bin/which")
     get("bin/about", "/bin/about")
     get("bin/usermgr", "/bin/usermgr")
+    get("bin/fetch", "/bin/fetch")
 
     -- libraries
 
     get("lib/lapi.lua", "/lib/lapi.lua")
     get("lib/console.lua", "/lib/console.lua")
     get("lib/logger.lua", "/lib/logger.lua")
+    get("lightOS/system.lua", "/lightOS/system.lua")
     
     -- gelaxy window meneger libs
 
@@ -100,10 +101,22 @@ local function install_files()
     get("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
     get("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
     get("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
+    get("lib/gelaxy/message.lua", "/lib/gelaxy/message.lua")
 
     -- gelaxy bootloader
 
     get("lightOS/gb.lua", "/lightOS/gb.lua")
+
+    -- images
+
+    get("img/about.nfp", "/img/about.nfp")
+    get("img/msg.nfp", "/img/msg.nfp")
+
+    -- Applications
+
+    fs.makeDir("apps/lightWeb")
+    get("apps/lweb.lua", "/apps/lweb.lua")
+
 
     -- creating user config
 
@@ -113,9 +126,9 @@ local function install_files()
     pclabel = read()
     local pcfg = fs.open("lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
-    pcfg.writeLine("ver=13.2")
+    pcfg.writeLine("ver=14.0")
     pcfg.writeLine("kver=10.0")
-    pcfg.writeLine("gelaxy_ver=0.6")
+    pcfg.writeLine("gelaxy_ver=0.7")
     pcfg.writeLine("usermgr_ver=0.3")
     pcfg.close()
 
