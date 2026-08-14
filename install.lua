@@ -13,6 +13,11 @@
 local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 local BghexValue = 0x0341fc
 
+local lv = 14.1
+local gv = 0.7
+local kv = 10.0
+local usrmgr_ver = 0.3
+
 term.setPaletteColor(colors.purple, BghexValue)
 local baseblue = colors.purple
 
@@ -116,6 +121,10 @@ local function install_files()
     fs.makeDir("apps/lightWeb")
     get("apps/lweb.lua", "/apps/lweb.lua")
 
+    -- stage 2
+
+    get("tmp/stage_2.lua", "/tmp/stage_2.lua")
+
 
     -- creating user config
 
@@ -125,10 +134,10 @@ local function install_files()
     pclabel = read()
     local pcfg = fs.open("lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
-    pcfg.writeLine("ver=14.0")
-    pcfg.writeLine("kver=10.0")
-    pcfg.writeLine("gelaxy_ver=0.7")
-    pcfg.writeLine("usermgr_ver=0.3")
+    pcfg.writeLine("ver=" .. lv)
+    pcfg.writeLine("kver=" .. kv)
+    pcfg.writeLine("gelaxy_ver=" .. gv)
+    pcfg.writeLine("usermgr_ver=" .. usrmgr_ver)
     pcfg.close()
 
     fs.makeDir("/home")
@@ -160,14 +169,17 @@ local function install_files()
     console.print_green("Hello, " .. usn .. "!")
 
     print(" ")
-    console.print_yellow("Please complete second stage in tab: 'stage 2'")
+    console.print_yellow("Welcome to lightOS!")
     print(" ")
-
-    gelaxy_windows.createTab()
-
-    while true do
-        read()
-    end
+    console.print_info("lightOS version: " .. lv)
+    console.print_info("lightOS kernel version: " .. kv)
+    console.print_info("lightOS gelaxy version: " .. gv)
+    console.print_info("lightOS user manager version: " .. usrmgr_ver)
+    print(" ")
+    
+    print("Press enter to reboot")
+    read()
+    os.reboot()
 end
 
 local function licensepage()
