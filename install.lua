@@ -270,7 +270,7 @@ local function open_terminal()
 end
 
 local terminalButton = Button.new(5, 5, 15, "Open Terminal", colors.blue, colors.white, open_terminal)
-local installButton = Button.new(7, 5, 18, "Install lightOS", colors.green, colors.white, do_setup)
+local installButton = Button.new(5, 7, 18, "Install lightOS", colors.green, colors.white, do_setup)
 
 terminalButton:draw()
 installButton:draw()
