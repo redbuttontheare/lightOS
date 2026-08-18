@@ -67,5 +67,6 @@ while true do
         yrwr = read()
         if yrwr == "1" then
             shell.run("/tmp/reinstall.lua")
-
+        end
+    end
 end

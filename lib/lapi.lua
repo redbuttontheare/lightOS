@@ -46,4 +46,8 @@ function lapi.loadConfig(path)
     return config
 end
 
+function lapi.createShortcut(path, target)
+    shell.run("/bin/ln", "create", path, target)
+end
+
 return lapi

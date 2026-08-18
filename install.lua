@@ -13,7 +13,7 @@
 local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 local BghexValue = 0x0341fc
 
-local lv = 14.1
+local lv = 14.5
 local gv = 0.7
 local kv = 10.0
 local usrmgr_ver = 0.3
@@ -48,6 +48,7 @@ local function get(file, savePath)
     end
     
     f.write(code)
+    print("Downloaded: " .. file .. " -> " .. savePath)
     f.close()
     
     return true
@@ -62,7 +63,6 @@ local function install_files()
     fs.makeDir("/lightOS")
     fs.makeDir("/bin")
     fs.makeDir("/lib")
-    fs.makeDir("/tmp")
     fs.makeDir("/img")
     fs.makeDir("/apps")
     get("pkg.lua", "/lightOS/pkg.lua")
@@ -90,6 +90,9 @@ local function install_files()
     get("bin/about", "/bin/about")
     get("bin/usermgr", "/bin/usermgr")
     get("bin/fetch", "/bin/fetch")
+    get("bin/pastebin", "/bin/pastebin")
+    get("bin/ln", "/bin/ln")
+    get("bin/lnr", "/bin/lnr")
 
     -- libraries
 
@@ -119,11 +122,7 @@ local function install_files()
     -- Applications
 
     fs.makeDir("apps/lightWeb")
-    get("apps/lweb.lua", "/apps/lweb.lua")
-
-    -- stage 2
-
-    get("tmp/stage_2.lua", "/tmp/stage_2.lua")
+    get("apps/lweb.lua", "/apps/lightWeb/lweb.lua")
 
 
     -- creating user config
@@ -212,6 +211,8 @@ local function licensepage()
 end
 
 local function do_setup()
+    term.SetCursorPos(1,1)
+    term.clear()
     print("Confirm installation [1 - yes 0 - no]:")
     write("[0/1]> ")
     cis = read()
@@ -227,6 +228,12 @@ end
 
 -- ===Main===
 print("Downloading Installer...")
+fs.makeDir("/tmp")
+fs.makeDir("/tmp/gl")
+get("lib/gelaxy/button.lua", "/tmp/gl/button.lua")
+get("lib/gelaxy/window.lua", "/tmp/gl/window.lua")
+get("lib/gelaxy/checkbox.lua", "/tmp/gl/checkbox.lua")
+get("lib/gelaxy/textbox.lua", "/tmp/gl/textbox.lua")
 
 sleep(4)
 
@@ -248,4 +255,35 @@ if pocket then
     read()
     os.reboot()
 end
-do_setup()
+
+local Button = dofile("/tmp/gl/button.lua")
+
+local function open_terminal()
+    term.setBackgroundColor(colors.black)
+    term.clear()
+    term.setCursorPos(1,1)
+    print("CraftOS Terminal")
+    return 0
+end
+
+local terminalButton = Button.new(5, 5, 15, "Open Terminal", colors.blue, colors.white, open_terminal)
+local installButton = Button.new(7, 5, 18, "Install lightOS", colors.green, colors.white, do_setup)
+
+terminalButton:draw()
+installButton:draw()
+
+local running = true
+while running do
+    local evData = { os.pullEvent() }
+    local event = evData[1]
+    
+    if event == "mouse_click" then
+        local cx, cy = evData[3], evData[4]
+        if terminalButton:handleClick(cx, cy) then
+            running = false 
+        end
+        if installButton:handleClick(cx, cy) then
+            running = false 
+        end
+    end
+end

@@ -1,0 +1,29 @@
+local args = { ... }
+local file = args[1]
+
+local function readLine(filePath, targetLine)
+    local file = io.open(filePath, "r") 
+    if not file then return nil end
+
+    local currentLine = 0
+    for line in file:lines() do
+        currentLine = currentLine + 1
+        if currentLine == targetLine then
+            file:close()
+            return line
+        end
+    end
+
+    file:close()
+    return nil
+end
+
+if file then
+    local filetorun = readLine(file, 3)
+
+    shell.run(filetorun)
+else
+    local console = dofile("/lib/console.lua")
+
+    console.print_error("No file specified to run.")
+end
