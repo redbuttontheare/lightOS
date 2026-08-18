@@ -228,6 +228,11 @@ local function do_setup()
 end
 
 -- ===Main===
+
+if fs.exists("/tmp") then
+    fs.delete("/tmp")
+end
+
 print("Downloading Installer...")
 fs.makeDir("/tmp")
 fs.makeDir("/tmp/gl")
@@ -247,9 +252,6 @@ local x = math.floor((w - #text) / 2) + 1
 local y = 1
 term.setCursorPos(x, y)
 print(text)
-if fs.exists("/tmp") then
-    fs.delete("/tmp")
-end
 if pocket then
     print("lightOS not supports phones")
     print("press enter to reboot")
