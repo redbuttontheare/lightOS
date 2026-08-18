@@ -48,8 +48,9 @@ local function get(file, savePath)
     end
     
     f.write(code)
-    print("Downloaded: " .. file .. " -> " .. savePath)
     f.close()
+
+    print("Downloaded: " .. file .. " -> " .. savePath)
     
     return true
 end
