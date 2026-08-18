@@ -212,7 +212,7 @@ local function licensepage()
 end
 
 local function do_setup()
-    term.SetCursorPos(1,1)
+    term.setCursorPos(1,1)
     term.clear()
     print("Confirm installation [1 - yes 0 - no]:")
     write("[0/1]> ")
