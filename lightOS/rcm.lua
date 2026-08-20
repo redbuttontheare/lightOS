@@ -65,6 +65,7 @@ while true do
         print("Do you want to reinstall lightOS?")
         write("[1-yes/0-NO]: ")
         yrwr = read()
+        return 0
         if yrwr == "1" then
             shell.run("/tmp/reinstall.lua")
         end
