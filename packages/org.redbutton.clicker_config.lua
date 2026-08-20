@@ -3,5 +3,5 @@ return {
     author = "RedButton",
     ver = "0.1",
     type = "bin",
-    files = { "clicker/org.redbutton.clicker" }
+    files = { "clicker" }
 }
