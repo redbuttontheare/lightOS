@@ -24,43 +24,90 @@ local baseblue = colors.purple
 local function get(file, savePath)
     local uniqueId = tostring(os.epoch("utc"))
     local url = base .. file .. "?nocache=" .. uniqueId
-    
+
     local response = http.get({
         url = url,
         headers = {
             ["Cache-Control"] = "no-cache, no-store, must-revalidate",
             ["Pragma"] = "no-cache",
             ["Expires"] = "0",
-            ["User-Agent"] = "ComputerCraft-lightOS-" .. uniqueId 
+            ["User-Agent"] = "ComputerCraft-lightOS-" .. uniqueId
         }
     })
-    
+
     if not response then
         return false
     end
-    
+
     local code = response.readAll()
     response.close()
-    
+
     local f = fs.open(savePath, "w")
     if not f then
         return false
     end
-    
+
     f.write(code)
     f.close()
 
-    print("Downloaded: " .. file .. " -> " .. savePath)
-    
     return true
 end
 
 local function cls()
     term.clear()
-    term.setCursorPos(1,1)
+    term.setCursorPos(1, 1)
+end
+
+local Button = dofile("/tmp/gl/button.lua")
+local Checkbox = dofile("/tmp/gl/checkbox.lua")
+local Textbox = dofile("/tmp/gl/textbox.lua")
+
+local function runScreen(widgets)
+    local screen = { done = false }
+    function screen.finish() screen.done = true end
+
+    local function redraw()
+        for _, w in ipairs(widgets) do
+            w:draw()
+        end
+    end
+
+    redraw()
+
+    while not screen.done do
+        local evData = { os.pullEvent() }
+        local event = evData[1]
+
+        if event == "mouse_click" then
+            local cx, cy = evData[3], evData[4]
+            for _, w in ipairs(widgets) do
+                if w.handleClick then
+                    w:handleClick(cx, cy)
+                end
+            end
+            redraw()
+        elseif event == "char" then
+            for _, w in ipairs(widgets) do
+                if w.handleChar then
+                    w:handleChar(evData[2])
+                end
+            end
+            redraw()
+        elseif event == "key" then
+            for _, w in ipairs(widgets) do
+                if w.handleKey then
+                    w:handleKey(evData[2])
+                end
+            end
+            redraw()
+        end
+    end
 end
 
 local function install_files()
+    term.setBackgroundColor(colors.green)
+    print(" ")
+    print("Wait...")
     fs.makeDir("/lightOS")
     fs.makeDir("/bin")
     fs.makeDir("/lib")
@@ -101,7 +148,7 @@ local function install_files()
     get("lib/console.lua", "/lib/console.lua")
     get("lib/logger.lua", "/lib/logger.lua")
     get("lightOS/system.lua", "/lightOS/system.lua")
-    
+
     -- gelaxy window meneger libs
 
     fs.makeDir("lib/gelaxy")
@@ -126,12 +173,64 @@ local function install_files()
     get("apps/lweb.lua", "/apps/lightWeb/lweb.lua")
 
 
-    -- creating user config
+    term.setBackgroundColor(baseblue)
+    cls()
+    term.setTextColor(colors.white)
+    term.setCursorPos(4, 2)
+    print("Set up your account")
 
-    write("Username: ")
-    usn = read()
-    write("Label your pc: ")
-    pclabel = read()
+    local usnBox = Textbox.new(4, 4, 20, "", nil)
+    local pclabelBox = Textbox.new(4, 7, 20, "", nil)
+
+    local usn, pclabel
+
+    local continueBtn = Button.new(4, 9, 12, "Continue", colors.green, colors.white, function()
+        usn = usnBox:getText()
+        pclabel = pclabelBox:getText()
+
+        if usn == "" or pclabel == "" then
+            return
+        end
+    end)
+
+    term.setCursorPos(4, 3)
+    write("Username:")
+    term.setCursorPos(4, 6)
+    write("PC label:")
+
+    local screen = { done = false }
+    local widgets = { usnBox, pclabelBox, continueBtn }
+
+    local function redraw()
+        for _, w in ipairs(widgets) do w:draw() end
+    end
+
+    redraw()
+
+    while not screen.done do
+        local evData = { os.pullEvent() }
+        local event = evData[1]
+
+        if event == "mouse_click" then
+            local cx, cy = evData[3], evData[4]
+            usnBox:handleClick(cx, cy)
+            pclabelBox:handleClick(cx, cy)
+            continueBtn:handleClick(cx, cy)
+
+            if usn and pclabel and usn ~= "" and pclabel ~= "" then
+                screen.done = true
+            end
+        elseif event == "char" then
+            usnBox:handleChar(evData[2])
+            pclabelBox:handleChar(evData[2])
+        elseif event == "key" then
+            usnBox:handleKey(evData[2])
+            pclabelBox:handleKey(evData[2])
+        end
+
+        redraw()
+    end
+
     local pcfg = fs.open("lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
     pcfg.writeLine("ver=" .. lv)
@@ -144,17 +243,13 @@ local function install_files()
 
     term.setBackgroundColor(colors.black)
     term.clear()
-    term.setCursorPos(1,1)
-    
-    local console = dofile("/lib/console.lua")
-    local gelaxy_windows = dofile("/lib/gelaxy/window.lua")
+    term.setCursorPos(1, 1)
 
-    _G.gelaxy_w = gelaxy_windows
+    local console = dofile("/lib/console.lua")
 
     console.print_info("Creating user directory..")
     console.print_ok("User directory created")
     console.print_info("Creating user config..")
-
 
     shell.run("/bin/usermgr", "add", usn)
     shell.run("/bin/usermgr", "add", "root")
@@ -162,7 +257,7 @@ local function install_files()
     console.print_ok("User config created")
 
     console.print_info("Setting up root superuser...")
-    rsu = fs.open("/home/root/.lightshl", "w")
+    local rsu = fs.open("/home/root/.lightshl", "w")
     rsu.writeLine("shellApi.setDir(\"/\")")
     rsu.close()
 
@@ -176,7 +271,7 @@ local function install_files()
     console.print_info("lightOS gelaxy version: " .. gv)
     console.print_info("lightOS user manager version: " .. usrmgr_ver)
     print(" ")
-    
+
     print("Press enter to reboot")
     read()
     os.reboot()
@@ -185,49 +280,57 @@ end
 local function licensepage()
     term.setBackgroundColor(colors.green)
     term.clear()
-    term.setCursorPos(4,2)
 
+    term.setCursorPos(4, 2)
     term.setBackgroundColor(colors.black)
     term.setTextColor(colors.yellow)
     print("Copyright (c) 2026 RedButton   ")
     term.setTextColor(colors.white)
-    term.setCursorPos(4,3)
-    print("                               ")
-    term.setCursorPos(4,4)
+    term.setCursorPos(4, 3)
     print("lightOS under GNU GPL v3       ")
-    term.setCursorPos(4,5)
-    print("See the /license.txt to detalis")
-    term.setBackgroundColor(colors.green)
-    term.setCursorPos(4,6)
-    write("[1-yes/0-no]: ")
-    lai = read()
+    term.setCursorPos(4, 4)
+    print("See the /license.txt for details")
 
-    if lai == "0" then
+    term.setBackgroundColor(colors.green)
+
+    local agreeCheckbox = Checkbox.new(4, 6, "I agree to the GNU GPL v3 license", false, nil)
+
+    local continueBtn = Button.new(4, 8, 10, "Continue", colors.gray, colors.white, function()
+        if agreeCheckbox.checked then
+            install_files()
+        end
+    end)
+
+    local cancelBtn = Button.new(16, 8, 10, "Cancel", colors.gray, colors.white, function()
         os.reboot()
-    elseif lai == "1" then
-        install_files()
-    else
-        os.reboot()
-    end
+    end)
+
+    runScreen({ agreeCheckbox, continueBtn, cancelBtn })
 end
 
 local function do_setup()
-    term.setCursorPos(1,1)
-    term.clear()
-    print("Confirm installation [1 - yes 0 - no]:")
-    write("[0/1]> ")
-    cis = read()
-    if cis == "0" then
-        os.reboot()
-    elseif cis == "1" then
-        licensepage()
-    else
-        os.reboot()
-    end
+    term.setBackgroundColor(baseblue)
+    term.setTextColor(colors.white)
+    cls()
 
+    term.setCursorPos(4, 2)
+    print("Confirm installation")
+
+    local confirmCheckbox = Checkbox.new(4, 4, "I want to install lightOS", false, nil)
+
+    local continueBtn = Button.new(4, 6, 10, "Continue", colors.green, colors.white, function()
+        if confirmCheckbox.checked then
+            licensepage()
+        end
+    end)
+
+    local cancelBtn = Button.new(16, 6, 10, "Cancel", colors.gray, colors.white, function()
+        os.reboot()
+    end)
+
+    runScreen({ confirmCheckbox, continueBtn, cancelBtn })
 end
 
--- ===Main===
 
 if fs.exists("/tmp") then
     fs.delete("/tmp")
@@ -252,6 +355,7 @@ local x = math.floor((w - #text) / 2) + 1
 local y = 1
 term.setCursorPos(x, y)
 print(text)
+
 if pocket then
     print("lightOS not supports phones")
     print("press enter to reboot")
@@ -259,14 +363,11 @@ if pocket then
     os.reboot()
 end
 
-local Button = dofile("/tmp/gl/button.lua")
-
 local function open_terminal()
     term.setBackgroundColor(colors.black)
     term.clear()
-    term.setCursorPos(1,1)
+    term.setCursorPos(1, 1)
     print("CraftOS Terminal")
-    return 0
 end
 
 local terminalButton = Button.new(5, 5, 15, "Open Terminal", colors.blue, colors.white, open_terminal)
@@ -279,14 +380,14 @@ local running = true
 while running do
     local evData = { os.pullEvent() }
     local event = evData[1]
-    
+
     if event == "mouse_click" then
         local cx, cy = evData[3], evData[4]
         if terminalButton:handleClick(cx, cy) then
-            running = false 
+            running = false
         end
         if installButton:handleClick(cx, cy) then
-            running = false 
+            running = false
         end
     end
 end
