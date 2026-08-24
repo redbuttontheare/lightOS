@@ -13,9 +13,9 @@
 local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 local BghexValue = 0x0341fc
 
-local lv = 14.5
+local lv = 14.9
 local gv = 0.7
-local kv = 10.0
+local kv = 10.1
 local usrmgr_ver = 0.3
 
 term.setPaletteColor(colors.purple, BghexValue)
@@ -116,6 +116,7 @@ local function install_files()
     get("pkg.lua", "/lightOS/pkg.lua")
     get("bm.lua", "/bm.lua")
     get("startup.lua", "/startup.lua")
+    get("bootmgr.lua", "/bootmgr.lua")
     get("autoexec.lua", "/lightOS/autoexec.lua")
     get("autoexec_runner.lua", "/lightOS/autoexec_runner.lua")
     get("lightOS/bs.lua", "/lightOS/bs.lua")
