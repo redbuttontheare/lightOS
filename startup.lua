@@ -38,5 +38,5 @@ _G.error = devicePanic
 
 print("lightOS UEFI")
 print("Booting device...")
-wait(2)
+sleep(2)
 shell.run("/bootmgr.lua")
