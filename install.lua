@@ -334,19 +334,10 @@ if fs.exists("/tmp") then
 end
 
 print("Downloading Installer...")
-fs.makeDir("/tmp")
-fs.makeDir("/tmp/gl")
-get("lib/gelaxy/button.lua", "/tmp/gl/button.lua")
-get("lib/gelaxy/window.lua", "/tmp/gl/window.lua")
-get("lib/gelaxy/checkbox.lua", "/tmp/gl/checkbox.lua")
-get("lib/gelaxy/textbox.lua", "/tmp/gl/textbox.lua")
-
-sleep(4)
-
 local Button = dofile("/tmp/gl/button.lua")
 local Checkbox = dofile("/tmp/gl/checkbox.lua")
 local Textbox = dofile("/tmp/gl/textbox.lua")
-
+sleep(4)
 
 term.setBackgroundColor(baseblue)
 term.setTextColor(colors.white)
