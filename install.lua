@@ -13,6 +13,10 @@
 local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 local BghexValue = 0x0341fc
 
+local Button = dofile("/tmp/gl/button.lua")
+local Checkbox = dofile("/tmp/gl/checkbox.lua")
+local Textbox = dofile("/tmp/gl/textbox.lua")
+
 local lv = 14.9
 local gv = 0.7
 local kv = 10.1
@@ -334,9 +338,7 @@ if fs.exists("/tmp") then
 end
 
 print("Downloading Installer...")
-local Button = dofile("/tmp/gl/button.lua")
-local Checkbox = dofile("/tmp/gl/checkbox.lua")
-local Textbox = dofile("/tmp/gl/textbox.lua")
+
 sleep(4)
 
 term.setBackgroundColor(baseblue)
