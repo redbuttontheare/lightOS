@@ -1,5 +1,7 @@
-# lightOS v14
+# lightOS v15
 ## For ComputerCraft and it fork CC: Tweaked
+
+### To install os need 2mb to install correctly
 
 <p align="center">
   <img src="screenshots/fetch.png" width="30%" />
@@ -17,3 +19,18 @@ pastebin run 7pwFMZW8
 ### The lightOS under GNU GPL License version 3.0 or above you can read license in file License
 
 #### Please read a documentations in Docs/
+
+## Changes:
+```
+Gelaxy:
+
+New Widgets: ListBox, TextListBox
+
+Package meneger:
+
+new subcommand: pkg uninstall
+now larc-based
+
+larc:
+Archivator
+```

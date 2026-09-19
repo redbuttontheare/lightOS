@@ -16,11 +16,13 @@ local BghexValue = 0x0341fc
 local Button = dofile("/tmp/gl/button.lua")
 local Checkbox = dofile("/tmp/gl/checkbox.lua")
 local Textbox = dofile("/tmp/gl/textbox.lua")
+local Textlistbox = dofile("/tmp/gl/textlistbox.lua")
 
-local lv = 14.9
-local gv = 0.7
+local lv = 15.0
+local gv = 1.0
 local kv = 10.1
 local usrmgr_ver = 0.3
+local pv = 0.2
 
 term.setPaletteColor(colors.purple, BghexValue)
 local baseblue = colors.purple
@@ -100,78 +102,111 @@ local function runScreen(widgets)
                 end
             end
             redraw()
+        elseif event == "mouse_scroll" then
+            local direction, cx, cy = evData[2], evData[3], evData[4]
+            for _, w in ipairs(widgets) do
+                if w.handleScroll then
+                    w:handleScroll(direction, cx, cy)
+                end
+            end
+            redraw()
         end
     end
 end
 
 local function install_files()
     term.setBackgroundColor(colors.green)
-    print(" ")
-    print("Wait...")
+    cls()
+
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.yellow)
+    term.setCursorPos(2, 1)
+    write("Installing lightOS...")
+    term.setTextColor(colors.white)
+
+    local w, h = term.getSize()
+    local logBox = Textlistbox.new(2, 3, w - 2, h - 4, {})
+
+    local function downloadWithLog(file, savePath)
+        local ok = get(file, savePath)
+        if ok then
+            logBox:addLine("OK   " .. file)
+        else
+            logBox:addLine("FAIL " .. file)
+        end
+        logBox:draw()
+        return ok
+    end
+
     fs.makeDir("/lightOS")
     fs.makeDir("/bin")
     fs.makeDir("/lib")
     fs.makeDir("/img")
     fs.makeDir("/apps")
-    get("pkg.lua", "/lightOS/pkg.lua")
-    get("bm.lua", "/bm.lua")
-    get("startup.lua", "/startup.lua")
-    get("bootmgr.lua", "/bootmgr.lua")
-    get("autoexec.lua", "/lightOS/autoexec.lua")
-    get("autoexec_runner.lua", "/lightOS/autoexec_runner.lua")
-    get("lightOS/bs.lua", "/lightOS/bs.lua")
-    get("lightOS/bs.nfp", "/lightOS/bs.nfp")
-    get("lightOS/hello.lua", "/lightOS/hello.lua")
-    get("lightOS/init.lua", "/lightOS/init.lua")
-    get("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
-    get("lightOS/rcm.lua", "/lightOS/rcm.lua")
-    get("other/license.txt", "/license.txt")
-    get("lightOS/kernel.lua", "/lightOS/kernel.lua")
+    downloadWithLog("pkg.lua", "/lightOS/pkg.lua")
+    downloadWithLog("bm.lua", "/bm.lua")
+    downloadWithLog("startup.lua", "/startup.lua")
+    downloadWithLog("bootmgr.lua", "/bootmgr.lua")
+    downloadWithLog("autoexec.lua", "/lightOS/autoexec.lua")
+    downloadWithLog("autoexec_runner.lua", "/lightOS/autoexec_runner.lua")
+    downloadWithLog("lightOS/bs.lua", "/lightOS/bs.lua")
+    downloadWithLog("lightOS/bs.nfp", "/lightOS/bs.nfp")
+    downloadWithLog("lightOS/hello.lua", "/lightOS/hello.lua")
+    downloadWithLog("lightOS/init.lua", "/lightOS/init.lua")
+    downloadWithLog("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
+    downloadWithLog("lightOS/rcm.lua", "/lightOS/rcm.lua")
+    downloadWithLog("other/license.txt", "/license.txt")
+    downloadWithLog("lightOS/kernel.lua", "/lightOS/kernel.lua")
 
     -- commands
 
-    get("bin/cd", "/bin/cd")
-    get("bin/clear", "/bin/clear")
-    get("bin/ls", "/bin/ls")
-    get("bin/reboot", "/bin/reboot")
-    get("bin/shutdown", "/bin/shutdown")
-    get("bin/which", "/bin/which")
-    get("bin/about", "/bin/about")
-    get("bin/usermgr", "/bin/usermgr")
-    get("bin/fetch", "/bin/fetch")
-    get("bin/pastebin", "/bin/pastebin")
-    get("bin/ln", "/bin/ln")
-    get("bin/lnr", "/bin/lnr")
+    downloadWithLog("bin/cd", "/bin/cd")
+    downloadWithLog("bin/clear", "/bin/clear")
+    downloadWithLog("bin/ls", "/bin/ls")
+    downloadWithLog("bin/reboot", "/bin/reboot")
+    downloadWithLog("bin/shutdown", "/bin/shutdown")
+    downloadWithLog("bin/which", "/bin/which")
+    downloadWithLog("bin/about", "/bin/about")
+    downloadWithLog("bin/usermgr", "/bin/usermgr")
+    downloadWithLog("bin/fetch", "/bin/fetch")
+    downloadWithLog("bin/pastebin", "/bin/pastebin")
+    downloadWithLog("bin/ln", "/bin/ln")
+    downloadWithLog("bin/lnr", "/bin/lnr")
+    downloadWithLog("bin/id", "/bin/id")
+    downloadWithLog("bin/larc", "/bin/larc")
 
     -- libraries
 
-    get("lib/lapi.lua", "/lib/lapi.lua")
-    get("lib/console.lua", "/lib/console.lua")
-    get("lib/logger.lua", "/lib/logger.lua")
-    get("lightOS/system.lua", "/lightOS/system.lua")
+    downloadWithLog("lib/lapi.lua", "/lib/lapi.lua")
+    downloadWithLog("lib/console.lua", "/lib/console.lua")
+    downloadWithLog("lib/logger.lua", "/lib/logger.lua")
+    downloadWithLog("lightOS/system.lua", "/lightOS/system.lua")
+    downloadWithLog("lib/archive.lua", "/lib/archive.lua")
 
     -- gelaxy window meneger libs
 
     fs.makeDir("lib/gelaxy")
-    get("lib/gelaxy/button.lua", "/lib/gelaxy/button.lua")
-    get("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
-    get("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
-    get("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
-    get("lib/gelaxy/message.lua", "/lib/gelaxy/message.lua")
+    downloadWithLog("lib/gelaxy/button.lua", "/lib/gelaxy/button.lua")
+    downloadWithLog("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
+    downloadWithLog("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
+    downloadWithLog("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
+    downloadWithLog("lib/gelaxy/message.lua", "/lib/gelaxy/message.lua")
+    downloadWithLog("lib/gelaxy/listbox.lua", "/lib/gelaxy/listbox.lua")
+    downloadWithLog("lib/gelaxy/textlistbox.lua", "/lib/gelaxy/textlistbox.lua")
 
     -- gelaxy bootloader
 
-    get("lightOS/gb.lua", "/lightOS/gb.lua")
+    downloadWithLog("lightOS/gb.lua", "/lightOS/gb.lua")
 
     -- images
 
-    get("img/about.nfp", "/img/about.nfp")
-    get("img/msg.nfp", "/img/msg.nfp")
+    downloadWithLog("img/about.nfp", "/img/about.nfp")
+    downloadWithLog("img/msg.nfp", "/img/msg.nfp")
 
     -- Applications
 
     fs.makeDir("apps/lightWeb")
-    get("apps/lweb.lua", "/apps/lightWeb/lweb.lua")
+    downloadWithLog("apps/lightWeb/lweb.lua", "/apps/lightWeb/lweb.lua")
 
 
     term.setBackgroundColor(baseblue)
@@ -238,6 +273,7 @@ local function install_files()
     pcfg.writeLine("kver=" .. kv)
     pcfg.writeLine("gelaxy_ver=" .. gv)
     pcfg.writeLine("usermgr_ver=" .. usrmgr_ver)
+    pcfg.writeLine("pkg_ver=" .. pv)
     pcfg.close()
 
     fs.makeDir("/home")
@@ -271,6 +307,7 @@ local function install_files()
     console.print_info("lightOS kernel version: " .. kv)
     console.print_info("lightOS gelaxy version: " .. gv)
     console.print_info("lightOS user manager version: " .. usrmgr_ver)
+    console.print_info("lightOS package manager version: " .. pv)
     print(" ")
 
     print("Press enter to reboot")
@@ -278,35 +315,52 @@ local function install_files()
     os.reboot()
 end
 
+local GPL_NOTICE_LINES = {
+    "lightOS - a custom OS for CC:Tweaked",
+    "Copyright (C) 2026 RedButton",
+    "",
+    "This program is free software: you",
+    "can redistribute it and/or modify",
+    "it under the terms of the GNU",
+    "General Public License as published",
+    "by the Free Software Foundation,",
+    "either version 3 of the License, or",
+    "(at your option) any later version.",
+    "",
+    "This program comes WITHOUT ANY",
+    "WARRANTY, without even the implied",
+    "warranty of MERCHANTABILITY or",
+    "FITNESS FOR A PARTICULAR PURPOSE.",
+    "",
+    "See /license.txt for the full text.",
+}
+
 local function licensepage()
     term.setBackgroundColor(colors.green)
     term.clear()
 
-    term.setCursorPos(4, 2)
+    term.setCursorPos(4, 1)
     term.setBackgroundColor(colors.black)
     term.setTextColor(colors.yellow)
-    print("Copyright (c) 2026 RedButton   ")
-    term.setTextColor(colors.white)
-    term.setCursorPos(4, 3)
-    print("lightOS under GNU GPL v3       ")
-    term.setCursorPos(4, 4)
-    print("See the /license.txt for details")
+    print("License")
 
     term.setBackgroundColor(colors.green)
 
-    local agreeCheckbox = Checkbox.new(4, 6, "I agree to the GNU GPL v3 license", false, nil)
+    local licenseBox = Textlistbox.new(4, 3, 34, 10, GPL_NOTICE_LINES)
 
-    local continueBtn = Button.new(4, 8, 10, "Continue", colors.gray, colors.white, function()
+    local agreeCheckbox = Checkbox.new(4, 14, "I agree to the GNU GPL v3 license", false, nil)
+
+    local continueBtn = Button.new(4, 16, 10, "Continue", colors.gray, colors.white, function()
         if agreeCheckbox.checked then
             install_files()
         end
     end)
 
-    local cancelBtn = Button.new(16, 8, 10, "Cancel", colors.gray, colors.white, function()
+    local cancelBtn = Button.new(16, 16, 10, "Cancel", colors.gray, colors.white, function()
         os.reboot()
     end)
 
-    runScreen({ agreeCheckbox, continueBtn, cancelBtn })
+    runScreen({ licenseBox, agreeCheckbox, continueBtn, cancelBtn })
 end
 
 local function do_setup()
@@ -330,11 +384,6 @@ local function do_setup()
     end)
 
     runScreen({ confirmCheckbox, continueBtn, cancelBtn })
-end
-
-
-if fs.exists("/tmp") then
-    fs.delete("/tmp")
 end
 
 print("Downloading Installer...")

@@ -6,6 +6,7 @@ local usr = _G.currentUser or "root"
 local free_space = fs.getFreeSpace("/")
 local ver = cfg.ver
 local kver = cfg.kver
+local host_type = term.isColor() and "Advanced Computer" or "Standard Computer"
 
 term.clear()
 term.setCursorPos(1,1)
@@ -38,9 +39,9 @@ write(" | | |/ _` |")
 term.setTextColor(colors.yellow)
 write(" Host: ")
 term.setTextColor(colors.white)
-print("Advanced Computer")
+print(host_type)
 
--- Рядок 5
+-- 5
 term.setTextColor(colors.orange)
 write(" | | | (_| |")
 term.setTextColor(colors.yellow)

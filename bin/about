@@ -13,7 +13,7 @@ local function launchShell()
 end
 
 local bg = paintutils.loadImage("/img/about.nfp")
-local closeButton = Button.new(35, 5, 1, "X", colors.red, colors.white, launchShell)
+local closeButton = Button.new(35, 5, 3, "X", colors.red, colors.white, launchShell)
 paintutils.drawImage(bg, 1, 1)
 term.setBackgroundColor(colors.white)
 term.setTextColor(colors.black)
@@ -23,7 +23,10 @@ term.setCursorPos(15, 7)
 print("lightOS " .. version)
 term.setCursorPos(15, 8)
 print("Gelaxy " .. gver)
-
+term.setCursorPos(15, 9)
+print("usermgr " .. cfg.usermgr_ver)
+term.setCursorPos(15, 10)
+print("package manager: " .. cfg.pkg_ver)
 
 closeButton:draw()
 

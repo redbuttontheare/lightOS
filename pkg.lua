@@ -1,17 +1,13 @@
--- Copyright (C) 2026 redbuttontheare@gmail.com
---
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
---
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
--- GNU General Public License for more details.
-
 local REPOS_PATH = "/lightOS/repos.cfg"
 local OFFICIAL_NAME = "lightOS-Official"
+local CACHE_DIR = "/lightOS/cache/pkg"
+
+if not fs.exists(CACHE_DIR) then
+    fs.makeDir(CACHE_DIR)
+end
+
+local archive = dofile("/lib/archive.lua")
+local lapi = dofile("/lib/lapi.lua")
 
 local repos = {
     [OFFICIAL_NAME] = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/packages"
@@ -72,7 +68,6 @@ local function get(url, savePath)
     return true
 end
 
-
 local function orderedRepoList()
     local ordered = {}
 
@@ -89,11 +84,102 @@ local function orderedRepoList()
     return ordered
 end
 
+local function listFilesRecursive(dir, prefix, result)
+    result = result or {}
+    prefix = prefix or ""
 
-local function findPackageConfig(pkgName)
+    for _, name in ipairs(fs.list(dir)) do
+        local full = fs.combine(dir, name)
+        local rel = (prefix == "") and name or (prefix .. "/" .. name)
+
+        if fs.isDir(full) then
+            listFilesRecursive(full, rel, result)
+        else
+            table.insert(result, rel)
+        end
+    end
+
+    return result
+end
+
+local function extractArchive(archiveUrl, tmpName)
+    local tmpArchivePath = CACHE_DIR .. "/" .. tmpName .. ".arc"
+
+    if not get(archiveUrl, tmpArchivePath) then
+        return nil, "Could not download archive: " .. archiveUrl
+    end
+
+    local extractDir = CACHE_DIR .. "/extract_" .. tmpName
+    if fs.exists(extractDir) then
+        fs.delete(extractDir)
+    end
+
+    local ok, extractedOrErr, destRoot = archive.unpack(tmpArchivePath, extractDir)
+    fs.delete(tmpArchivePath)
+
+    if not ok then
+        return nil, extractedOrErr
+    end
+
+    return destRoot, extractDir
+end
+
+local function findPackageArchive(pkgName)
+    for _, repo in ipairs(orderedRepoList()) do
+        local url = repo.base .. "/" .. pkgName .. ".arc"
+        local destRoot, extractDirOrErr = extractArchive(url, pkgName)
+
+        if destRoot then
+            local cfgPath = fs.combine(destRoot, "package.cfg")
+            if not fs.exists(cfgPath) then
+                fs.delete(extractDirOrErr)
+            else
+                local cfg = lapi.loadConfig(cfgPath)
+                cfg.name = cfg.name or pkgName
+                return cfg, destRoot, extractDirOrErr, repo.name
+            end
+        end
+    end
+
+    return nil
+end
+
+local function installFromExtracted(destRoot)
+    local relPaths = listFilesRecursive(destRoot)
+    local failedAny = false
+
+    for _, rel in ipairs(relPaths) do
+        if rel ~= "package.cfg" then
+            local srcPath = fs.combine(destRoot, rel)
+            local destPath = "/" .. rel
+            local destDir = fs.getDir(destPath)
+
+            if destDir ~= "" and not fs.exists(destDir) then
+                fs.makeDir(destDir)
+            end
+
+            if fs.exists(destPath) then
+                fs.delete(destPath)
+            end
+
+            write("Installing " .. rel .. " -> " .. destPath .. "... ")
+            local ok = pcall(fs.copy, srcPath, destPath)
+            if ok then
+                print("OK")
+            else
+                print("FAILED")
+                failedAny = true
+            end
+        end
+    end
+
+    return not failedAny
+end
+
+local function findPackageConfigLegacy(pkgName)
     for _, repo in ipairs(orderedRepoList()) do
         local url = repo.base .. "/" .. pkgName .. "_config.lua"
-        local tmpPath = "/tmp_" .. pkgName .. "_config.lua"
+        local tmpPath = CACHE_DIR .. "/" .. pkgName .. "_config.lua"
 
         if get(url, tmpPath) then
             local ok, cfg = pcall(dofile, tmpPath)
@@ -106,8 +192,21 @@ local function findPackageConfig(pkgName)
     return nil
 end
 
+local function resolveInstalledPath(cfg, filePath)
+    local fileName = fs.getName(filePath)
 
-local function downloadPackageFiles(cfg, base)
+    if cfg.type == "cmd" then
+        return "/bin/" .. fileName
+    elseif cfg.type == "app" then
+        return "/apps/" .. cfg.name .. "/" .. fileName
+    elseif cfg.type == "lib" then
+        return "/lib/" .. cfg.name .. "/" .. fileName
+    end
+
+    return nil
+end
+
+local function downloadPackageFilesLegacy(cfg, base)
     if not cfg.files then
         printError("Package config has no 'files' list.")
         return false
@@ -117,22 +216,12 @@ local function downloadPackageFiles(cfg, base)
 
     for _, filePath in ipairs(cfg.files) do
         local url = base .. "/" .. filePath
-        local fileName = fs.getName(filePath)
-        local savePath
+        local savePath = resolveInstalledPath(cfg, filePath)
 
-        if cfg.type == "cmd" then
-            savePath = "/bin/" .. fileName
-        elseif cfg.type == "app" then
-            savePath = "/apps/" .. cfg.name .. "/" .. fileName
-        elseif cfg.type == "lib" then
-            savePath = "/lib/" .. cfg.name .. "/" .. fileName
-        else
+        if not savePath then
             printError("Unknown or missing 'type' in package config: " .. tostring(cfg.type))
             failedAny = true
-            savePath = nil
-        end
-
-        if savePath then
+        else
             write("Downloading " .. filePath .. " -> " .. savePath .. "... ")
             if get(url, savePath) then
                 print("OK")
@@ -146,8 +235,8 @@ local function downloadPackageFiles(cfg, base)
     return not failedAny
 end
 
-local function fetchConfigFromUrl(configUrl)
-    local tmpPath = "/tmp_dep_config.lua"
+local function fetchConfigFromUrlLegacy(configUrl)
+    local tmpPath = CACHE_DIR .. "/dep_config.lua"
     if not get(configUrl, tmpPath) then
         return nil
     end
@@ -163,13 +252,13 @@ local function fetchConfigFromUrl(configUrl)
     return cfg, base
 end
 
-local function installFromConfigUrl(configUrl, visited)
+local function installFromConfigUrlLegacy(configUrl, visited)
     if visited[configUrl] then
         return true
     end
     visited[configUrl] = true
 
-    local cfg, base = fetchConfigFromUrl(configUrl)
+    local cfg, base = fetchConfigFromUrlLegacy(configUrl)
     if not cfg then
         printError("Failed to fetch dependency config: " .. configUrl)
         return false
@@ -179,35 +268,69 @@ local function installFromConfigUrl(configUrl, visited)
 
     if cfg.dependencies then
         for _, depUrl in ipairs(cfg.dependencies) do
-            if not installFromConfigUrl(depUrl, visited) then
+            if not installFromConfigUrlLegacy(depUrl, visited) then
                 printError("Failed to install dependency of '" .. tostring(cfg.name) .. "'")
                 return false
             end
         end
     end
 
-    return downloadPackageFiles(cfg, base)
+    return downloadPackageFilesLegacy(cfg, base)
 end
 
 local function installPackage(pkgName)
     print("Searching for '" .. pkgName .. "'...")
-    local cfg, repoName, base = findPackageConfig(pkgName)
 
-    if not cfg then
+    local cfg, destRoot, extractDir, repoName = findPackageArchive(pkgName)
+
+    if cfg then
+        print("Found in repo: " .. repoName .. " (archive)")
+        print("Name: " .. tostring(cfg.name))
+        print("Author: " .. tostring(cfg.author))
+        print("Version: " .. tostring(cfg.ver))
+
+        if repoName ~= OFFICIAL_NAME then
+            print("")
+            print("WARNING: this repository is not verified by lightOS.")
+            print("Install packages from it at your own risk.")
+        end
+
+        write("Proceed with install? (y/n): ")
+        local answer = read()
+        if answer ~= "y" then
+            fs.delete(extractDir)
+            print("Cancelled.")
+            return
+        end
+
+        local ok = installFromExtracted(destRoot)
+        fs.delete(extractDir)
+
+        if ok then
+            print("Done installing '" .. pkgName .. "'.")
+        else
+            print("Done, but some files failed to install.")
+        end
+        return
+    end
+
+    local legacyCfg, legacyRepoName, legacyBase = findPackageConfigLegacy(pkgName)
+
+    if not legacyCfg then
         printError("Package not found: " .. pkgName)
         return
     end
 
-    print("Found in repo: " .. repoName)
-    print("Name: " .. tostring(cfg.name))
-    print("Author: " .. tostring(cfg.author))
-    print("Version: " .. tostring(cfg.ver))
+    print("Found in repo: " .. legacyRepoName .. " (legacy)")
+    print("Name: " .. tostring(legacyCfg.name))
+    print("Author: " .. tostring(legacyCfg.author))
+    print("Version: " .. tostring(legacyCfg.ver))
 
-    if cfg.dependencies and #cfg.dependencies > 0 then
-        print("This package has " .. #cfg.dependencies .. " dependency(ies).")
+    if legacyCfg.dependencies and #legacyCfg.dependencies > 0 then
+        print("This package has " .. #legacyCfg.dependencies .. " dependency(ies).")
     end
 
-    if repoName ~= OFFICIAL_NAME then
+    if legacyRepoName ~= OFFICIAL_NAME then
         print("")
         print("WARNING: this repository is not verified by lightOS.")
         print("Install packages from it at your own risk.")
@@ -221,21 +344,135 @@ local function installPackage(pkgName)
     end
 
     local visited = {}
-    if cfg.dependencies then
-        for _, depUrl in ipairs(cfg.dependencies) do
-            if not installFromConfigUrl(depUrl, visited) then
+    if legacyCfg.dependencies then
+        for _, depUrl in ipairs(legacyCfg.dependencies) do
+            if not installFromConfigUrlLegacy(depUrl, visited) then
                 printError("Dependency install failed, aborting.")
                 return
             end
         end
     end
 
-    local ok = downloadPackageFiles(cfg, base)
+    local ok = downloadPackageFilesLegacy(legacyCfg, legacyBase)
 
     if ok then
         print("Done installing '" .. pkgName .. "'.")
     else
-        print("Done, but some files failed to download.")
+        print("Done, but some files failed to install.")
+    end
+end
+
+local function uninstallPackage(pkgName)
+    print("Looking up '" .. pkgName .. "'...")
+
+    local cfg, destRoot, extractDir = findPackageArchive(pkgName)
+
+    if cfg then
+        local relPaths = listFilesRecursive(destRoot)
+        fs.delete(extractDir)
+
+        local pathsToRemove = {}
+        for _, rel in ipairs(relPaths) do
+            if rel ~= "package.cfg" then
+                local diskPath = "/" .. rel
+                if fs.exists(diskPath) then
+                    table.insert(pathsToRemove, diskPath)
+                end
+            end
+        end
+
+        if #pathsToRemove == 0 then
+            print("No installed files found for '" .. pkgName .. "' (already removed?).")
+            return
+        end
+
+        print("The following files will be removed:")
+        for _, path in ipairs(pathsToRemove) do
+            print("  " .. path)
+        end
+
+        write("Proceed with uninstall? (y/n): ")
+        local answer = read()
+        if answer ~= "y" then
+            print("Cancelled.")
+            return
+        end
+
+        local failedAny = false
+        for _, path in ipairs(pathsToRemove) do
+            local ok = pcall(fs.delete, path)
+            if ok then
+                print("Removed: " .. path)
+            else
+                printError("Failed to remove: " .. path)
+                failedAny = true
+            end
+        end
+
+        if failedAny then
+            print("Done, but some files failed to remove.")
+        else
+            print("Done uninstalling '" .. pkgName .. "'.")
+        end
+        return
+    end
+
+    local legacyCfg = findPackageConfigLegacy(pkgName)
+
+    if not legacyCfg then
+        printError("Package config not found (in any repo): " .. pkgName)
+        printError("Cannot determine which files belong to this package.")
+        return
+    end
+
+    local pathsToRemove = {}
+    for _, filePath in ipairs(legacyCfg.files or {}) do
+        local diskPath = resolveInstalledPath(legacyCfg, filePath)
+        if diskPath and fs.exists(diskPath) then
+            table.insert(pathsToRemove, diskPath)
+        end
+    end
+
+    if #pathsToRemove == 0 then
+        print("No installed files found for '" .. pkgName .. "' (already removed?).")
+        return
+    end
+
+    print("The following files will be removed:")
+    for _, path in ipairs(pathsToRemove) do
+        print("  " .. path)
+    end
+
+    write("Proceed with uninstall? (y/n): ")
+    local answer = read()
+    if answer ~= "y" then
+        print("Cancelled.")
+        return
+    end
+
+    local failedAny = false
+    for _, path in ipairs(pathsToRemove) do
+        local ok = pcall(fs.delete, path)
+        if ok then
+            print("Removed: " .. path)
+        else
+            printError("Failed to remove: " .. path)
+            failedAny = true
+        end
+    end
+
+    if legacyCfg.type == "app" or legacyCfg.type == "lib" then
+        local dirBase = (legacyCfg.type == "app") and "/apps/" or "/lib/"
+        local dirPath = dirBase .. legacyCfg.name
+        if fs.exists(dirPath) and fs.isDir(dirPath) and #fs.list(dirPath) == 0 then
+            fs.delete(dirPath)
+        end
+    end
+
+    if failedAny then
+        print("Done, but some files failed to remove.")
+    else
+        print("Done uninstalling '" .. pkgName .. "'.")
     end
 end
 
@@ -268,18 +505,15 @@ local function listRepos()
     end
 end
 
--- === usage ===
-
 local function usage()
     print("lightOS package manager")
     print("")
     print("Usage:")
     print("  pkg install <name>")
+    print("  pkg uninstall <name>")
     print("  pkg addrepo <name> <url>")
     print("  pkg repos")
 end
-
--- === MAIN ===
 
 loadRepos()
 
@@ -292,6 +526,14 @@ if subcommand == "install" then
         printError("Usage: pkg install <name>")
     else
         installPackage(pkgName)
+    end
+
+elseif subcommand == "uninstall" then
+    local pkgName = args[2]
+    if not pkgName then
+        printError("Usage: pkg uninstall <name>")
+    else
+        uninstallPackage(pkgName)
     end
 
 elseif subcommand == "addrepo" then

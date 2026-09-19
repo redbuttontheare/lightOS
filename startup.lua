@@ -36,6 +36,8 @@ _G.error = devicePanic
 
 -- Main
 
+term.clear()
+term.setCursorPos(1, 1)
 print("lightOS UEFI")
 print("Booting device...")
 sleep(2)

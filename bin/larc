@@ -1,0 +1,88 @@
+local archive = dofile("/lib/archive.lua")
+
+local args = { ... }
+local subcommand = args[1]
+
+local function usage()
+    print("Usage:")
+    print("  larc pack <folder> --raw|--sized [-y]")
+    print("  larc unpack <archive.arc> [--ud <path>] [-y]")
+end
+
+local function hasFlag(flag)
+    for _, a in ipairs(args) do
+        if a == flag then return true end
+    end
+    return false
+end
+
+local function flagValue(flag)
+    for i, a in ipairs(args) do
+        if a == flag then
+            return args[i + 1]
+        end
+    end
+    return nil
+end
+
+if subcommand == "pack" then
+    local folder = args[2]
+    local quiet = hasFlag("-y")
+    local wantRaw = hasFlag("--raw")
+    local wantSized = hasFlag("--sized")
+
+    if not folder or (not wantRaw and not wantSized) then
+        usage()
+        return
+    end
+
+    local compress = wantSized
+    local output = folder .. ".arc"
+
+    if not quiet then
+        write("Packing '" .. folder .. "' (" .. (compress and "sized" or "raw") .. ")... ")
+    end
+
+    local ok, filesOrErr = archive.pack(folder, output, nil, compress)
+
+    if ok then
+        if not quiet then
+            print("OK")
+            print("Files packed: " .. filesOrErr)
+            print("Output: " .. output)
+        end
+    else
+        printError("FAILED")
+        printError(filesOrErr)
+    end
+
+elseif subcommand == "unpack" then
+    local archivePath = args[2]
+    local quiet = hasFlag("-y")
+    local dest = flagValue("--ud") or (shell and shell.dir()) or "."
+
+    if not archivePath then
+        usage()
+        return
+    end
+
+    if not quiet then
+        write("Unpacking '" .. archivePath .. "'... ")
+    end
+
+    local ok, extractedOrErr, destRoot = archive.unpack(archivePath, dest)
+
+    if ok then
+        if not quiet then
+            print("OK")
+            print("Files extracted: " .. extractedOrErr)
+            print("Location: " .. destRoot)
+        end
+    else
+        printError("FAILED")
+        printError(extractedOrErr)
+    end
+
+else
+    usage()
+end
