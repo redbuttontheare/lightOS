@@ -18,11 +18,11 @@ local Checkbox = dofile("/tmp/gl/checkbox.lua")
 local Textbox = dofile("/tmp/gl/textbox.lua")
 local Textlistbox = dofile("/tmp/gl/textlistbox.lua")
 
-local lv = 15.0
+local lv = 16.0
 local gv = 1.0
-local kv = 10.1
+local kv = 11.0
 local usrmgr_ver = 0.3
-local pv = 0.2
+local pkg_ver = 0.2
 
 term.setPaletteColor(colors.purple, BghexValue)
 local baseblue = colors.purple
@@ -151,12 +151,12 @@ local function install_files()
     downloadWithLog("autoexec_runner.lua", "/lightOS/autoexec_runner.lua")
     downloadWithLog("lightOS/bs.lua", "/lightOS/bs.lua")
     downloadWithLog("lightOS/bs.nfp", "/lightOS/bs.nfp")
-    downloadWithLog("lightOS/hello.lua", "/lightOS/hello.lua")
     downloadWithLog("lightOS/init.lua", "/lightOS/init.lua")
     downloadWithLog("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
     downloadWithLog("lightOS/rcm.lua", "/lightOS/rcm.lua")
     downloadWithLog("other/license.txt", "/license.txt")
     downloadWithLog("lightOS/kernel.lua", "/lightOS/kernel.lua")
+    downloadWithLog("lightOS/err_hand.lua", "/lightOS/err_hand.lua")
 
     -- commands
 
@@ -174,6 +174,9 @@ local function install_files()
     downloadWithLog("bin/lnr", "/bin/lnr")
     downloadWithLog("bin/id", "/bin/id")
     downloadWithLog("bin/larc", "/bin/larc")
+    downloadWithLog("bin/echo", "/bin/echo")
+    downloadWithLog("bin/mv", "/bin/mv")
+    downloadWithLog("bin/cp", "/bin/cp")
 
     -- libraries
 
@@ -202,6 +205,7 @@ local function install_files()
 
     downloadWithLog("img/about.nfp", "/img/about.nfp")
     downloadWithLog("img/msg.nfp", "/img/msg.nfp")
+    downloadWithLog("img/err.nfp", "/img/err.nfp")
 
     -- Applications
 
@@ -273,7 +277,8 @@ local function install_files()
     pcfg.writeLine("kver=" .. kv)
     pcfg.writeLine("gelaxy_ver=" .. gv)
     pcfg.writeLine("usermgr_ver=" .. usrmgr_ver)
-    pcfg.writeLine("pkg_ver=" .. pv)
+    pcfg.writeLine("pkg_ver=" .. pkg_ver)
+    pcfg.writeLine("error_handler=/lightOS/err_hand.lua")
     pcfg.close()
 
     fs.makeDir("/home")
@@ -307,7 +312,7 @@ local function install_files()
     console.print_info("lightOS kernel version: " .. kv)
     console.print_info("lightOS gelaxy version: " .. gv)
     console.print_info("lightOS user manager version: " .. usrmgr_ver)
-    console.print_info("lightOS package manager version: " .. pv)
+    console.print_info("lightOS package manager version: " .. pkg_ver)
     print(" ")
 
     print("Press enter to reboot")

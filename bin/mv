@@ -1,0 +1,39 @@
+local args = { ... }
+local source = args[1]
+local dest = args[2]
+ 
+if not source or not dest then
+    printError("Usage: mv <source> <destination>")
+    return
+end
+ 
+local srcPath = shell.resolve(source)
+local destPath = shell.resolve(dest)
+ 
+if not fs.exists(srcPath) then
+    printError("No such file or directory: " .. srcPath)
+    return
+end
+ 
+if fs.exists(destPath) and fs.isDir(destPath) then
+    destPath = fs.combine(destPath, fs.getName(srcPath))
+end
+ 
+if fs.exists(destPath) then
+    printError("Destination already exists: " .. destPath)
+    printError("(mv does not overwrite - remove it first if you want to replace it)")
+    return
+end
+ 
+if fs.isReadOnly(srcPath) then
+    printError("Cannot move a read-only file: " .. srcPath)
+    return
+end
+ 
+local ok, err = pcall(fs.move, srcPath, destPath)
+ 
+if ok then
+    print("Moved: " .. srcPath .. " -> " .. destPath)
+else
+    printError("Move failed: " .. tostring(err))
+end

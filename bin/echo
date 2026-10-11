@@ -1,0 +1,43 @@
+
+Echo · LUA
+local args = { ... }
+ 
+local redirectIndex = nil
+local redirectMode = nil
+ 
+for i, a in ipairs(args) do
+    if a == ">" or a == ">>" then
+        redirectIndex = i
+        redirectMode = (a == ">") and "w" or "a"
+        break
+    end
+end
+ 
+if redirectIndex then
+    local destFile = args[redirectIndex + 1]
+ 
+    if not destFile then
+        printError("Usage: echo <text> > <file>   (or >> to append)")
+        return
+    end
+ 
+    local textWords = {}
+    for i = 1, redirectIndex - 1 do
+        table.insert(textWords, args[i])
+    end
+    local text = table.concat(textWords, " ")
+ 
+    local path = shell.resolve(destFile)
+    local f = fs.open(path, redirectMode)
+ 
+    if not f then
+        printError("Could not open file for writing: " .. path)
+        return
+    end
+ 
+    f.writeLine(text)
+    f.close()
+else
+    print(table.concat(args, " "))
+end
+ 

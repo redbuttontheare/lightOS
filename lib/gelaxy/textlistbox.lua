@@ -21,7 +21,7 @@ function textlistbox.new(x, y, width, height, lines)
     self.height = height
     self.lines = lines or {}
     self.scrollOffset = 0
-    self.autoScroll = false
+    self.autoScroll = true
     return self
 end
 

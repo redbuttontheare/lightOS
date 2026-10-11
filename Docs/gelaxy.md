@@ -220,3 +220,142 @@ while true do
     end
 end
 ```
+### Listboxes
+## gelaxy GUI Component: Listbox
+
+The `listbox` component provides a scrollable, selectable list of items, suitable for package pickers, file browsers, settings menus, or any situation where the user needs to choose one option from several.
+
+### Constructor
+
+```lua
+local myListbox = gelaxy.listbox.new(x, y, width, height, items, on_select_function)
+```
+
+*   **`x`** *(number)*: The X coordinate of the upper-left corner.
+*   **`y`** *(number)*: The Y coordinate of the upper-left corner.
+*   **`width`** *(number)*: The horizontal width of the list in characters. Items longer than this are truncated.
+*   **`height`** *(number)*: The number of visible rows. If there are more items than `height`, the list scrolls.
+*   **`items`** *(table, optional)*: An array of strings to display. Defaults to `{}`.
+*   **`on_select_function`** *(function, optional)*: Callback function executed when an item is clicked. Accepts two arguments: the selected item text and its index.
+
+---
+
+### Methods
+
+| Method | Description | Arguments | Returns |
+| :--- | :--- | :--- | :--- |
+| `:draw()` | Renders the visible slice of items, highlighting the currently selected one (inverted colors). | none | none |
+| `:isClicked(cx, cy)` | Evaluates if the mouse coordinates hit the boundary of the list box. | `cx` (click X), `cy` (click Y) | `boolean` (true if clicked within bounds) |
+| `:handleClick(cx, cy)` | Evaluates mouse clicks. Selects the item under the cursor and triggers `onSelect` if one exists at that row. | `cx` (click X), `cy` (click Y) | `boolean` (true if the click landed inside the box) |
+| `:handleScroll(direction, cx, cy)` | Scrolls the visible window up or down. Call this from a `mouse_scroll` event handler. | `direction` (`-1` up / `1` down), `cx`, `cy` | `boolean` (true if the scroll landed inside the box) |
+| `:setItems(items)` | Replaces the item list entirely and resets selection/scroll. | `items` (table of strings) | none |
+| `:getSelected()` | Retrieves the currently selected item and its index. | none | `string, number` (or `nil, nil` if nothing selected) |
+
+---
+
+### Usage Example
+
+The following script demonstrates a package picker built with `listbox`:
+
+```lua
+local listbox = dofile("/lib/gelaxy/listbox.lua")
+
+local packages = { "core", "lua-tools", "gelaxy", "networking" }
+local chosen = nil
+
+local picker = listbox.new(2, 3, 20, 6, packages, function(item, index)
+    chosen = item
+end)
+
+local function redraw()
+    term.clear()
+    term.setCursorPos(2, 1)
+    write("Choose a package:")
+
+    picker:draw()
+
+    term.setCursorPos(2, 10)
+    write("Selected: " .. tostring(chosen))
+end
+
+redraw()
+
+while true do
+    local event, p1, p2, p3 = os.pullEvent()
+
+    if event == "mouse_click" then
+        picker:handleClick(p2, p3)
+        redraw()
+    elseif event == "mouse_scroll" then
+        picker:handleScroll(p1, p2, p3)
+        redraw()
+    elseif event == "key" then
+        if p1 == keys.q then
+            break
+        end
+    end
+end
+```
+
+### Textlistboxes
+## gelaxy GUI Component: Textlistbox
+
+The `textlistbox` component is a scrollable text block **without selection** - suitable for logs, console-style output, long readable text (such as a license notice), or any content the user only needs to read and scroll through, not pick from.
+
+### Constructor
+
+```lua
+local myTextlistbox = gelaxy.textlistbox.new(x, y, width, height, lines)
+```
+
+*   **`x`** *(number)*: The X coordinate of the upper-left corner.
+*   **`y`** *(number)*: The Y coordinate of the upper-left corner.
+*   **`width`** *(number)*: The horizontal width in characters. Lines longer than this are truncated.
+*   **`height`** *(number)*: The number of visible rows. If there are more lines than `height`, the block scrolls.
+*   **`lines`** *(table, optional)*: An array of strings to display. Defaults to `{}`. Can also be built up afterward with `:addLine()`.
+
+---
+
+### Methods
+
+| Method | Description | Arguments | Returns |
+| :--- | :--- | :--- | :--- |
+| `:draw()` | Renders the visible slice of lines. No highlighting, no selection - plain scrollable text. | none | none |
+| `:isClicked(cx, cy)` | Evaluates if the mouse coordinates hit the boundary of the box. | `cx` (click X), `cy` (click Y) | `boolean` (true if clicked within bounds) |
+| `:handleScroll(direction, cx, cy)` | Scrolls the visible window up or down. Call this from a `mouse_scroll` event handler. | `direction` (`-1` up / `1` down), `cx`, `cy` | `boolean` (true if the scroll landed inside the box) |
+| `:setLines(lines)` | Replaces all lines entirely and resets scroll. | `lines` (table of strings) | none |
+| `:addLine(text)` | Appends one line to the end. If `autoScroll` is `true` (the default), the view jumps to the bottom automatically - ideal for growing logs. | `text` (string) | none |
+| `:clear()` | Removes all lines and resets scroll. | none | none |
+
+---
+
+### Properties
+
+| Property | Description |
+| :--- | :--- |
+| `autoScroll` | `boolean`, defaults to `true`. When `true`, `:addLine()` keeps the view pinned to the newest line, like a live console. Set to `false` to let the user scroll back through history without being pulled back down on every new line. |
+
+---
+
+### Usage Example
+
+The following script demonstrates a live install log built with `textlistbox`:
+
+```lua
+local textlistbox = dofile("/lib/gelaxy/textlistbox.lua")
+
+local log = textlistbox.new(2, 3, 36, 10, {})
+
+term.clear()
+term.setCursorPos(2, 1)
+write("Installing...")
+
+log:addLine("Searching for 'core'...")
+log:draw()
+
+log:addLine("Found in repo: lightOS-Official")
+log:draw()
+
+log:addLine("Installing core/anet.lua -> /lib/core/anet.lua... OK")
+log:draw()
+```

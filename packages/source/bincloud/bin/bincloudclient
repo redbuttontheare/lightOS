@@ -1,0 +1,30 @@
+local modem = peripheral.find("modem")
+if not modem then
+    error("No wireless modem found!")
+end
+rednet.open(peripheral.getName(modem))
+
+write("Code of paste: ")
+local code = read()
+
+write("Download path: ")
+local path = read()
+
+print("Sending request...")
+rednet.broadcast(code .. "-get")
+
+print("Waiting for file...")
+local senderID, message = rednet.receive(5)
+
+if message then
+    local file = fs.open(path, "w")
+    if file then
+        file.write(message)
+        file.close()
+        print("File successfully downloaded to: " .. path)
+    else
+        print("Error: Could not create file at: " .. path)
+    end
+else
+    print("Error: Timeout reached or code not found.")
+end

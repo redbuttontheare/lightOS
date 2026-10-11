@@ -1,0 +1,36 @@
+
+local args = { ... }
+local source = args[1]
+local dest = args[2]
+ 
+if not source or not dest then
+    printError("Usage: cp <source> <destination>")
+    return
+end
+ 
+local srcPath = shell.resolve(source)
+local destPath = shell.resolve(dest)
+ 
+if not fs.exists(srcPath) then
+    printError("No such file or directory: " .. srcPath)
+    return
+end
+ 
+if fs.exists(destPath) and fs.isDir(destPath) then
+    destPath = fs.combine(destPath, fs.getName(srcPath))
+end
+ 
+if fs.exists(destPath) then
+    printError("Destination already exists: " .. destPath)
+    printError("(cp does not overwrite - remove it first if you want to replace it)")
+    return
+end
+ 
+local ok, err = pcall(fs.copy, srcPath, destPath)
+ 
+if ok then
+    print("Copied: " .. srcPath .. " -> " .. destPath)
+else
+    printError("Copy failed: " .. tostring(err))
+end
+ 
