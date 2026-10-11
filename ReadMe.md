@@ -23,14 +23,8 @@ pastebin run 7pwFMZW8
 ## Changes:
 ```
 Gelaxy:
+Updated Documentation
+PKG:
+Created Documentation
 
-New Widgets: ListBox, TextListBox
-
-Package meneger:
-
-new subcommand: pkg uninstall
-now larc-based
-
-larc:
-Archivator
 ```
