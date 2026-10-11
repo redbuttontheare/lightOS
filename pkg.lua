@@ -1,8 +1,8 @@
-local REPOS_PATH = "/lightOS/repos.cfg"
-local INSTALLED_PATH = "/lightOS/installed.cfg"
-local PKGDB_DIR = "/lightOS/pkgdb"
+local REPOS_PATH = "/.var/pkgdb/repos.cfg"
+local INSTALLED_PATH = "/.var/pkgdb/installed.cfg"
+local PKGDB_DIR = "/.var/pkgdb"
 local OFFICIAL_NAME = "lightOS-Official"
-local CACHE_DIR = "/lightOS/cache/pkg"
+local CACHE_DIR = "/.var/cache/pkg"
 
 local quiet = false
 
