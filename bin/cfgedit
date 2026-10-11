@@ -1,0 +1,255 @@
+local Listbox = dofile("/lib/gelaxy/listbox.lua")
+local Textbox = dofile("/lib/gelaxy/textbox.lua")
+local Button = dofile("/lib/gelaxy/button.lua")
+
+local configPath = "/lightOS/config.cfg"
+
+local keysList = {}
+local configData = {}
+
+local function rawUpdateConfig(path, key, value)
+    local content = ""
+    if fs.exists(path) then
+        local f = fs.open(path, "r")
+        if f then
+            content = f.readAll()
+            f.close()
+        end
+    end
+
+    local pattern = "([%c^]" .. key .. "%s*=%s*)[^\r\n]+"
+    
+    if not string.find(content, pattern) then
+        if not string.find(content, "[\r\n]$") and content ~= "" then
+            content = content .. "\n"
+        end
+        content = content .. key .. "=" .. tostring(value) .. "\n"
+    else
+        content = string.gsub(content, pattern, "%1" .. tostring(value))
+    end
+
+    local fWrite = fs.open(path, "w")
+    if not fWrite then return false end
+    fWrite.write(content)
+    fWrite.close()
+    return true
+end
+
+local function loadConfigData()
+    keysList = {}
+    configData = {}
+    if fs.exists(configPath) then
+        local f = fs.open(configPath, "r")
+        if f then
+            local content = f.readAll()
+            f.close()
+            
+            for line in string.gmatch(content, "[^\r\n]+") do
+                -- Патерн теперь игнорирует кавычки и забирает значение как есть
+                local key, val = string.match(line, "^%s*([%w_]+)%s*=%s*(.*)")
+                if key and val then
+                    -- Убираем случайные пробелы по краям значения
+                    val = string.gsub(val, "^%s*(.-)%s*$", "%1")
+                    if not configData[key] then
+                        table.insert(keysList, key)
+                        configData[key] = val
+                    end
+                end
+            end
+        end
+    end
+    table.sort(keysList)
+end
+
+loadConfigData()
+
+local w, h = term.getSize()
+local selectedKey = nil
+local activeMenu = nil 
+
+local keyPicker = Listbox.new(2, 4, math.floor(w * 0.4), h - 5, keysList, function(item, index)
+    selectedKey = item
+    if _G.valInput then
+        _G.valInput:setText(configData[item] or "")
+    end
+    activeMenu = nil
+end)
+
+local valInput = Textbox.new(math.floor(w * 0.4) + 4, 6, math.floor(w * 0.5), "", function(newText)
+    if selectedKey then
+        configData[selectedKey] = newText
+    end
+end)
+_G.valInput = valInput
+
+local menuFileBtn = Button.new(2, 1, 6, "[File]", colors.white, colors.black, function()
+    activeMenu = (activeMenu == "File") and nil or "File"
+end)
+
+local menuKeyBtn = Button.new(9, 1, 5, "[Key]", colors.white, colors.black, function()
+    activeMenu = (activeMenu == "Key") and nil or "Key"
+end)
+
+local function saveConfigAction()
+    if selectedKey and configData[selectedKey] then
+        rawUpdateConfig(configPath, selectedKey, configData[selectedKey])
+        loadConfigData()
+        keyPicker:setItems(keysList)
+    end
+    activeMenu = nil
+end
+
+local function openNewFileAction()
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.black)
+    term.setCursorPos(2, h)
+    term.clearLine()
+    write("Open CFG path: ")
+    local newPath = read()
+    if newPath and newPath ~= "" and fs.exists(newPath) and not fs.isDir(newPath) then
+        configPath = newPath
+        selectedKey = nil
+        valInput:setText("")
+        loadConfigData()
+        keyPicker:setItems(keysList)
+    end
+    activeMenu = nil
+end
+
+local function createNewKeyAction()
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.black)
+    term.setCursorPos(2, h)
+    term.clearLine()
+    write("New key name: ")
+    local newKey = read()
+    if newKey and newKey ~= "" and not configData[newKey] then
+        rawUpdateConfig(configPath, newKey, "")
+        loadConfigData()
+        keyPicker:setItems(keysList)
+        selectedKey = newKey
+        valInput:setText("")
+    end
+    activeMenu = nil
+end
+
+local function deleteKeyAction()
+    if selectedKey then
+        if fs.exists(configPath) then
+            local f = fs.open(configPath, "r")
+            if f then
+                local content = f.readAll()
+                f.close()
+                local pattern = "[%c^]%s*" .. selectedKey .. "%s*=%s*[^\r\n]+"
+                content = string.gsub(content, pattern, "")
+                local fWrite = fs.open(configPath, "w")
+                if fWrite then
+                    fWrite.write(content)
+                    fWrite.close()
+                end
+            end
+        end
+        selectedKey = nil
+        valInput:setText("")
+        loadConfigData()
+        keyPicker:setItems(keysList)
+    end
+    activeMenu = nil
+end
+
+local optOpen   = Button.new(2, 2, 6, " Open ", colors.white, colors.black, openNewFileAction)
+local optSave   = Button.new(2, 3, 6, " Save ", colors.white, colors.black, saveConfigAction)
+local optNew    = Button.new(9, 2, 8, " New    ", colors.white, colors.black, createNewKeyAction)
+local optDelete = Button.new(9, 3, 8, " Delete ", colors.white, colors.black, deleteKeyAction)
+
+local closeBtn = Button.new(w - 5, 1, 5, "Exit", colors.red, colors.white, function()
+    if _G.gelaxy then
+        _G.gelaxy.closeTab("regedit")
+    else
+        _G.regeditRunning = false
+    end
+end)
+
+local function drawScreen()
+    term.setBackgroundColor(colors.gray)
+    term.clear()
+    
+    term.setCursorPos(1, 1)
+    term.setBackgroundColor(colors.white)
+    term.clearLine()
+    
+    menuFileBtn:draw()
+    menuKeyBtn:draw()
+    closeBtn:draw()
+    
+    term.setBackgroundColor(colors.gray)
+    keyPicker:draw()
+    
+    term.setCursorPos(math.floor(w * 0.4) + 4, 4)
+    term.setTextColor(colors.yellow)
+    write("File: " .. fs.getName(configPath))
+    term.setCursorPos(math.floor(w * 0.4) + 4, 5)
+    write("Key: " .. (selectedKey or "[None]"))
+    term.setTextColor(colors.white)
+    
+    valInput:draw()
+    
+    if activeMenu == "File" then
+        optOpen:draw()
+        optSave:draw()
+    elseif activeMenu == "Key" then
+        optNew:draw()
+        optDelete:draw()
+    end
+end
+
+drawScreen()
+
+_G.regeditRunning = true
+while _G.regeditRunning do
+    local evData = { os.pullEvent() }
+    local event = evData[1]
+    
+    if event == "mouse_click" then
+        local cx, cy = evData[3], evData[4]
+        local handled = false
+        
+        if activeMenu == "File" then
+            if cy == 2 and cx >= 2 and cx <= 7 then optOpen:handleClick(cx, cy); handled = true
+            elseif cy == 3 and cx >= 2 and cx <= 7 then optSave:handleClick(cx, cy); handled = true end
+        elseif activeMenu == "Key" then
+            if cy == 2 and cx >= 9 and cx <= 16 then optNew:handleClick(cx, cy); handled = true
+            elseif cy == 3 and cx >= 9 and cx <= 16 then optDelete:handleClick(cx, cy); handled = true end
+        end
+        
+        if not handled then
+            menuFileBtn:handleClick(cx, cy)
+            menuKeyBtn:handleClick(cx, cy)
+            closeBtn:handleClick(cx, cy)
+            
+            keyPicker:handleClick(cx, cy)
+            valInput:handleClick(cx, cy)
+        end
+        
+        drawScreen()
+        
+    elseif event == "char" then
+        valInput:handleChar(evData[2])
+        drawScreen()
+        
+    elseif event == "key" then
+        valInput:handleKey(evData[2])
+        if evData[2] == keys.q and not valInput.focused then
+            if _G.gelaxy then
+                _G.gelaxy.closeTab("regedit")
+            else
+                _G.regeditRunning = false
+            end
+        end
+        drawScreen()
+        
+    elseif event == "mouse_scroll" then
+        keyPicker:handleScroll(evData[2], evData[3], evData[4])
+        drawScreen()
+    end
+end

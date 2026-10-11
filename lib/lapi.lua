@@ -33,14 +33,15 @@ end
 function lapi.saveConfig(path, key, value)
     local lines = {}
     local keyFound = false
+    
     if fs.exists(path) then
         local file = fs.open(path, "r")
         local line = file.readLine()
         while line do
             if line ~= "" and not string.match(line, "^%s*#") then
-                local currentKey = string.match(line, "([^=]+)=")
-                if currentKey and string.match(currentKey, "^%s*(.-)%s*$") == key then
-                    line = key .. "=" .. value
+                local currentKey = string.match(line, "^%s*([%w_]+)%s*=")
+                if currentKey == key then
+                    line = key .. "=" .. tostring(value)
                     keyFound = true
                 end
             end
@@ -49,11 +50,18 @@ function lapi.saveConfig(path, key, value)
         end
         file.close()
     end
-    if not keyFound then table.insert(lines, key .. "=" .. value) end
+    
+    if not keyFound then 
+        table.insert(lines, key .. "=" .. tostring(value)) 
+    end
+    
     local file = fs.open(path, "w")
-    for _, l in ipairs(lines) do file.writeLine(l) end
+    for _, l in ipairs(lines) do 
+        file.writeLine(l) 
+    end
     file.close()
 end
+
 
 function lapi.createShortcut(path, target)
     shell.run("/bin/ln", "create", path, target)

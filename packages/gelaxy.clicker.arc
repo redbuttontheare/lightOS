@@ -5,7 +5,7 @@ gelaxy.clicker:
   local lapi = dofile("/lib/lapi.lua")
   
   local score = 0
-  local save_path = "/lightOS/clicker.cfg"
+  local save_path = "/.var/clicker.cfg"
   
   if fs.exists(save_path) then
       local config = lapi.loadConfig(save_path)

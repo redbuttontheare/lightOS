@@ -33,6 +33,6 @@ local pcfg = lapi.loadConfig("/lightOS/config.cfg")
 if pcfg.error_handler and fs.exists(pcfg.error_handler) then
     local ok, err = pcall(dofile, pcfg.error_handler)
     if not ok then
-        printError("Failed to load error handler: " .. tostring(err))
+        error("The SYSTEM HALTED")
     end
 end

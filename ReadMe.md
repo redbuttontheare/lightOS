@@ -22,9 +22,6 @@ pastebin run 7pwFMZW8
 
 ## Changes:
 ```
-Gelaxy:
-Updated Documentation
-PKG:
-Created Documentation
-
+PGK:
+NEW CMD "pkg-get" UPDATES PACKAGE MENEGER
 ```

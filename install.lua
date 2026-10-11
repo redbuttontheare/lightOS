@@ -18,11 +18,11 @@ local Checkbox = dofile("/tmp/gl/checkbox.lua")
 local Textbox = dofile("/tmp/gl/textbox.lua")
 local Textlistbox = dofile("/tmp/gl/textlistbox.lua")
 
-local lv = 16.0
+local lv = 17.0
 local gv = 1.0
 local kv = 11.0
 local usrmgr_ver = 0.3
-local pkg_ver = 0.2
+local pkg_ver = 0.3
 
 term.setPaletteColor(colors.purple, BghexValue)
 local baseblue = colors.purple
@@ -143,6 +143,8 @@ local function install_files()
     fs.makeDir("/lib")
     fs.makeDir("/img")
     fs.makeDir("/apps")
+    fs.makeDir("/.var")
+    fs.makeDir("/.var/pkgdb")
     downloadWithLog("pkg.lua", "/lightOS/pkg.lua")
     downloadWithLog("bm.lua", "/bm.lua")
     downloadWithLog("startup.lua", "/startup.lua")
@@ -177,6 +179,13 @@ local function install_files()
     downloadWithLog("bin/echo", "/bin/echo")
     downloadWithLog("bin/mv", "/bin/mv")
     downloadWithLog("bin/cp", "/bin/cp")
+    downloadWithLog("bin/pkg-get", "/bin/pkg-get")
+    downloadWithLog("bin/cat", "/bin/cat")
+    downloadWithLog("bin/rm", "/bin/rm")
+    downloadWithLog("bin/mkdir", "/bin/mkdir")
+    downloadWithLog("bin/cfgedit", "/bin/cfgedit")
+
+
 
     -- libraries
 
@@ -193,7 +202,6 @@ local function install_files()
     downloadWithLog("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
     downloadWithLog("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
     downloadWithLog("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
-    downloadWithLog("lib/gelaxy/message.lua", "/lib/gelaxy/message.lua")
     downloadWithLog("lib/gelaxy/listbox.lua", "/lib/gelaxy/listbox.lua")
     downloadWithLog("lib/gelaxy/textlistbox.lua", "/lib/gelaxy/textlistbox.lua")
 
@@ -340,6 +348,28 @@ local GPL_NOTICE_LINES = {
     "See /license.txt for the full text.",
 }
 
+local function requrements_page()
+    term.setBackgroundColor(colors.green)
+    term.setTextColor(colors.white)
+    term.clear()
+    term.setCursorPos(4, 1)
+    
+    print("Requrements")
+
+    local rqbox = Textlistbox.new(4, 3, 45, 10, {
+        "1. HTTP enabled",
+        "2. An internet connection",
+        "3. A wireless modem (optional)",
+        "4. At least 3MB of free disk space",
+    })
+
+    local continueBtn = Button.new(4, 14, 10, "Continue", colors.gray, colors.white, function()
+        install_files()
+    end)
+
+    runScreen({ rqbox, continueBtn })
+end
+
 local function licensepage()
     term.setBackgroundColor(colors.green)
     term.clear()
@@ -357,7 +387,7 @@ local function licensepage()
 
     local continueBtn = Button.new(4, 16, 10, "Continue", colors.gray, colors.white, function()
         if agreeCheckbox.checked then
-            install_files()
+            requrements_page()
         end
     end)
 
