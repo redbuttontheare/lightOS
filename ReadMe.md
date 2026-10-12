@@ -1,4 +1,4 @@
-# lightOS v15
+# lightOS
 ## For ComputerCraft and it fork CC: Tweaked
 
 ### To install os need 2mb to install correctly
