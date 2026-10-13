@@ -19,6 +19,8 @@ local cfg = lapi.loadConfig("/lightOS/config.cfg")
 
 local version = cfg.ver
 _G.ligtos_ver = version
+local shellpath = cfg.shell
+_G.lightos_shell = shellpath
 
 term.clear()
 term.setCursorPos(1,1)

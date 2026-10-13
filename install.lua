@@ -20,7 +20,7 @@ local Textlistbox = dofile("/tmp/gl/textlistbox.lua")
 
 local lv = 17.0
 local gv = 1.0
-local kv = 11.0
+local kv = 11.5
 local usrmgr_ver = 0.3
 local pkg_ver = 0.3
 
@@ -287,6 +287,7 @@ local function install_files()
     pcfg.writeLine("usermgr_ver=" .. usrmgr_ver)
     pcfg.writeLine("pkg_ver=" .. pkg_ver)
     pcfg.writeLine("error_handler=/lightOS/err_hand.lua")
+    pcfg.writeLine("shell=/lightOS/lightshell.lua")
     pcfg.close()
 
     fs.makeDir("/home")
