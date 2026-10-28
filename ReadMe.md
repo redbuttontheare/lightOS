@@ -16,12 +16,15 @@ pastebin run 7pwFMZW8
 ```
 ### Tips: Source code of server edition: https://github.com/redbuttontheare/lightOS-Server
 
+### I working on TypeSciptToLua for programs
+### (but ui be in lua)
+
 ### The lightOS under GNU GPL License version 3.0 or above you can read license in file License
 
 #### Please read a documentations in Docs/
 
 ## Changes:
 ```
-PGK:
-NEW CMD "pkg-get" UPDATES PACKAGE MENEGER
+GELAXY:
+new widgets: progressbar, dialog
 ```

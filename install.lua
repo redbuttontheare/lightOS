@@ -19,7 +19,7 @@ local Textbox = dofile("/tmp/gl/textbox.lua")
 local Textlistbox = dofile("/tmp/gl/textlistbox.lua")
 
 local lv = 17.0
-local gv = 1.0
+local gv = 2.0
 local kv = 11.5
 local usrmgr_ver = 0.3
 local pkg_ver = 0.3
@@ -204,6 +204,8 @@ local function install_files()
     downloadWithLog("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
     downloadWithLog("lib/gelaxy/listbox.lua", "/lib/gelaxy/listbox.lua")
     downloadWithLog("lib/gelaxy/textlistbox.lua", "/lib/gelaxy/textlistbox.lua")
+    downloadWithLog("lib/gelaxy/dialog.lua", "/lib/gelaxy/dialog.lua")
+    downloadWithLog("lib/gelaxy/progressbar.lua", "/lib/gelaxy/progressbar.lua")
 
     -- gelaxy bootloader
 
