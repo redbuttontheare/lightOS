@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "strict": true,
+    "types": ["cc-types"]
+  },
+  "tstl": {
+    "luaTarget": "5.2",
+    "noHeader": true,
+    "luaBundle": "build/kernel.lua",
+    "luaBundleEntry": "src/kernel.ts",
+    "luaLibBundle": "inline"
+  },
+  "include": ["src/**/*"]
+}

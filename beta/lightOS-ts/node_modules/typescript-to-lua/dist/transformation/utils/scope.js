@@ -1,0 +1,272 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LoopContinued = exports.ScopeType = void 0;
+exports.walkScopesUp = walkScopesUp;
+exports.markSymbolAsReferencedInCurrentScopes = markSymbolAsReferencedInCurrentScopes;
+exports.peekScope = peekScope;
+exports.findScope = findScope;
+exports.findAsyncTryScopeInStack = findAsyncTryScopeInStack;
+exports.findAsyncTryScopeBeforeLoop = findAsyncTryScopeBeforeLoop;
+exports.addScopeVariableDeclaration = addScopeVariableDeclaration;
+exports.hasReferencedUndefinedLocalFunction = hasReferencedUndefinedLocalFunction;
+exports.hasReferencedSymbol = hasReferencedSymbol;
+exports.separateHoistedStatements = separateHoistedStatements;
+exports.performHoisting = performHoisting;
+const ts = __importStar(require("typescript"));
+const lua = __importStar(require("../../LuaAST"));
+const utils_1 = require("../../utils");
+const symbols_1 = require("./symbols");
+const typescript_1 = require("./typescript");
+var ScopeType;
+(function (ScopeType) {
+    ScopeType[ScopeType["File"] = 1] = "File";
+    ScopeType[ScopeType["Function"] = 2] = "Function";
+    ScopeType[ScopeType["Switch"] = 4] = "Switch";
+    ScopeType[ScopeType["Loop"] = 8] = "Loop";
+    ScopeType[ScopeType["Conditional"] = 16] = "Conditional";
+    ScopeType[ScopeType["Block"] = 32] = "Block";
+    ScopeType[ScopeType["Try"] = 64] = "Try";
+    ScopeType[ScopeType["Catch"] = 128] = "Catch";
+    ScopeType[ScopeType["LoopInitializer"] = 256] = "LoopInitializer";
+})(ScopeType || (exports.ScopeType = ScopeType = {}));
+var LoopContinued;
+(function (LoopContinued) {
+    LoopContinued[LoopContinued["WithGoto"] = 0] = "WithGoto";
+    LoopContinued[LoopContinued["WithRepeatBreak"] = 1] = "WithRepeatBreak";
+    LoopContinued[LoopContinued["WithContinue"] = 2] = "WithContinue";
+})(LoopContinued || (exports.LoopContinued = LoopContinued = {}));
+function* walkScopesUp(context) {
+    const scopeStack = context.scopeStack;
+    for (let i = scopeStack.length - 1; i >= 0; --i) {
+        const scope = scopeStack[i];
+        yield scope;
+    }
+}
+function markSymbolAsReferencedInCurrentScopes(context, symbolId, identifier) {
+    var _a;
+    for (const scope of context.scopeStack) {
+        (_a = scope.referencedSymbols) !== null && _a !== void 0 ? _a : (scope.referencedSymbols = new Map());
+        const references = (0, utils_1.getOrUpdate)(scope.referencedSymbols, symbolId, () => []);
+        references.push(identifier);
+    }
+}
+function peekScope(context) {
+    const scopeStack = context.scopeStack;
+    const scope = scopeStack[scopeStack.length - 1];
+    (0, utils_1.assert)(scope);
+    return scope;
+}
+function findScope(context, scopeTypes) {
+    for (let i = context.scopeStack.length - 1; i >= 0; --i) {
+        const scope = context.scopeStack[i];
+        if (scopeTypes & scope.type) {
+            return scope;
+        }
+    }
+}
+function findAsyncTryScopeInStack(context) {
+    for (const scope of walkScopesUp(context)) {
+        if (scope.type === ScopeType.Function)
+            return undefined;
+        if (scope.type === ScopeType.Try || scope.type === ScopeType.Catch)
+            return scope;
+    }
+    return undefined;
+}
+/** Like findAsyncTryScopeInStack, but also stops at Loop boundaries. */
+function findAsyncTryScopeBeforeLoop(context) {
+    for (const scope of walkScopesUp(context)) {
+        if (scope.type === ScopeType.Function || scope.type === ScopeType.Loop)
+            return undefined;
+        if (scope.type === ScopeType.Try || scope.type === ScopeType.Catch)
+            return scope;
+    }
+    return undefined;
+}
+function addScopeVariableDeclaration(scope, declaration) {
+    var _a;
+    (_a = scope.variableDeclarations) !== null && _a !== void 0 ? _a : (scope.variableDeclarations = []);
+    scope.variableDeclarations.push(declaration);
+}
+function isHoistableFunctionDeclaredInScope(symbol, scopeNode) {
+    var _a;
+    return (_a = symbol === null || symbol === void 0 ? void 0 : symbol.declarations) === null || _a === void 0 ? void 0 : _a.some(d => ts.isFunctionDeclaration(d) && (0, typescript_1.findFirstNodeAbove)(d, (n) => n === scopeNode));
+}
+// Checks for references to local functions which haven't been defined yet,
+// and thus will be hoisted above the current position.
+function hasReferencedUndefinedLocalFunction(context, scope) {
+    var _a;
+    if (!scope.referencedSymbols) {
+        return false;
+    }
+    for (const [symbolId, nodes] of scope.referencedSymbols) {
+        const type = context.checker.getTypeAtLocation(nodes[0]);
+        if (!((_a = scope.functionDefinitions) === null || _a === void 0 ? void 0 : _a.has(symbolId)) &&
+            type.getCallSignatures().length > 0 &&
+            isHoistableFunctionDeclaredInScope(type.symbol, scope.node)) {
+            return true;
+        }
+    }
+    return false;
+}
+function hasReferencedSymbol(context, scope, symbol) {
+    if (!scope.referencedSymbols) {
+        return;
+    }
+    for (const nodes of scope.referencedSymbols.values()) {
+        if (nodes.some(node => context.checker.getSymbolAtLocation(node) === symbol)) {
+            return true;
+        }
+    }
+    return false;
+}
+function separateHoistedStatements(context, statements) {
+    const scope = peekScope(context);
+    const allHoistedStatments = [];
+    const allHoistedIdentifiers = [];
+    let { unhoistedStatements, hoistedStatements, hoistedIdentifiers } = hoistFunctionDefinitions(context, scope, statements);
+    allHoistedStatments.push(...hoistedStatements);
+    allHoistedIdentifiers.push(...hoistedIdentifiers);
+    ({ unhoistedStatements, hoistedIdentifiers } = hoistVariableDeclarations(context, scope, unhoistedStatements));
+    allHoistedIdentifiers.push(...hoistedIdentifiers);
+    ({ unhoistedStatements, hoistedStatements } = hoistImportStatements(scope, unhoistedStatements));
+    allHoistedStatments.unshift(...hoistedStatements);
+    return {
+        statements: unhoistedStatements,
+        hoistedStatements: allHoistedStatments,
+        hoistedIdentifiers: allHoistedIdentifiers,
+    };
+}
+function performHoisting(context, statements) {
+    const result = separateHoistedStatements(context, statements);
+    const modifiedStatements = [...result.hoistedStatements, ...result.statements];
+    if (result.hoistedIdentifiers.length > 0) {
+        modifiedStatements.unshift(lua.createVariableDeclarationStatement(result.hoistedIdentifiers));
+    }
+    return modifiedStatements;
+}
+function shouldHoistSymbol(context, symbolId, scope) {
+    // Always hoist in top-level of switch statements
+    if (scope.type === ScopeType.Switch) {
+        return true;
+    }
+    const symbolInfo = (0, symbols_1.getSymbolInfo)(context, symbolId);
+    if (!symbolInfo) {
+        return false;
+    }
+    const declaration = (0, typescript_1.getFirstDeclarationInFile)(symbolInfo.symbol, context.sourceFile);
+    if (!declaration) {
+        return false;
+    }
+    if (symbolInfo.firstSeenAtPos < declaration.pos) {
+        return true;
+    }
+    if (scope.functionDefinitions) {
+        for (const [functionSymbolId, functionDefinition] of scope.functionDefinitions) {
+            (0, utils_1.assert)(functionDefinition.definition);
+            const { line, column } = lua.getOriginalPos(functionDefinition.definition);
+            if (line !== undefined && column !== undefined) {
+                const definitionPos = ts.getPositionOfLineAndCharacter(context.sourceFile, line, column);
+                if (functionSymbolId !== symbolId && // Don't recurse into self
+                    declaration.pos < definitionPos && // Ignore functions before symbol declaration
+                    functionDefinition.referencedSymbols.has(symbolId) &&
+                    shouldHoistSymbol(context, functionSymbolId, scope)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+function hoistVariableDeclarations(context, scope, statements) {
+    if (!scope.variableDeclarations) {
+        return { unhoistedStatements: statements, hoistedIdentifiers: [] };
+    }
+    const unhoistedStatements = [...statements];
+    const hoistedIdentifiers = [];
+    for (const declaration of scope.variableDeclarations) {
+        const symbols = declaration.left.map(i => i.symbolId).filter(utils_1.isNonNull);
+        if (symbols.some(s => shouldHoistSymbol(context, s, scope))) {
+            const index = unhoistedStatements.indexOf(declaration);
+            if (index < 0) {
+                continue; // statements array may not contain all statements in the scope (switch-case)
+            }
+            if (declaration.right) {
+                const assignment = lua.createAssignmentStatement(declaration.left, declaration.right);
+                lua.setNodePosition(assignment, declaration); // Preserve position info for sourcemap
+                unhoistedStatements.splice(index, 1, assignment);
+            }
+            else {
+                unhoistedStatements.splice(index, 1);
+            }
+            hoistedIdentifiers.push(...declaration.left);
+        }
+    }
+    return { unhoistedStatements, hoistedIdentifiers };
+}
+function hoistFunctionDefinitions(context, scope, statements) {
+    if (!scope.functionDefinitions) {
+        return { unhoistedStatements: statements, hoistedStatements: [], hoistedIdentifiers: [] };
+    }
+    const unhoistedStatements = [...statements];
+    const hoistedStatements = [];
+    const hoistedIdentifiers = [];
+    for (const [functionSymbolId, functionDefinition] of scope.functionDefinitions) {
+        (0, utils_1.assert)(functionDefinition.definition);
+        if (shouldHoistSymbol(context, functionSymbolId, scope)) {
+            const index = unhoistedStatements.indexOf(functionDefinition.definition);
+            if (index < 0) {
+                continue; // statements array may not contain all statements in the scope (switch-case)
+            }
+            unhoistedStatements.splice(index, 1);
+            if (lua.isVariableDeclarationStatement(functionDefinition.definition)) {
+                // Separate function definition and variable declaration
+                (0, utils_1.assert)(functionDefinition.definition.right);
+                hoistedIdentifiers.push(...functionDefinition.definition.left);
+                hoistedStatements.push(lua.createAssignmentStatement(functionDefinition.definition.left, functionDefinition.definition.right));
+            }
+            else {
+                hoistedStatements.push(functionDefinition.definition);
+            }
+        }
+    }
+    return { unhoistedStatements, hoistedStatements, hoistedIdentifiers };
+}
+function hoistImportStatements(scope, statements) {
+    var _a;
+    return { unhoistedStatements: statements, hoistedStatements: (_a = scope.importStatements) !== null && _a !== void 0 ? _a : [] };
+}
+//# sourceMappingURL=scope.js.map

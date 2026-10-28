@@ -1,0 +1,19 @@
+{
+  "name": "lightos-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "build": "tstl",
+  "watch": "tstl --watch"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cc-types": "^1.0.0-beta.12",
+    "typescript": "^6.0.2",
+    "typescript-to-lua": "^1.37.1"
+  }
+}
