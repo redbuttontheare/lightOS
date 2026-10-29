@@ -4,15 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "build": "tstl",
-  "watch": "tstl --watch"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "cc-types": "^1.0.0-beta.12",
+    "cc-tweaked-types": "^0.4.0",
     "typescript": "^6.0.2",
     "typescript-to-lua": "^1.37.1"
   }

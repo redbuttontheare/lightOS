@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "target": "es5",
+        "moduleResolution": "node",
+        "types": ["typescript-to-lua/language-extensions", "lua-types"],
+        "typeRoots": [
+            "./node_modules/@types"
+        ]
+    },
+    "main": "declarations/index.d.ts",
+    "include":[
+        "declarations/**/*.d.ts"
+    ]
+  }
