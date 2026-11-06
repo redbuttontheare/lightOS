@@ -15,6 +15,7 @@
 pastebin run 7pwFMZW8
 ```
 ### Tips: Source code of server edition: https://github.com/redbuttontheare/lightOS-Server
+### You can use tsToLua on beta/lightOS-ts
 
 ### I working on TypeSciptToLua for programs
 ### (but ui be in lua)
@@ -25,6 +26,14 @@ pastebin run 7pwFMZW8
 
 ## Changes:
 ```
-GELAXY:
-new widgets: progressbar, dialog
+LARC:
+new command argument: --strip
+before update:
+sample: larc unpack /update.arc --ud /
+creates directory update in root
+after update:
+sample: larc unpack /update.arc --strip --ud /
+unpack in /
+(all directories e.g. bin files e.g bin/coolcommand be in /bin/)
+
 ```

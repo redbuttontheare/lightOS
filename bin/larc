@@ -6,7 +6,7 @@ local subcommand = args[1]
 local function usage()
     print("Usage:")
     print("  larc pack <folder> --raw|--sized [-y]")
-    print("  larc unpack <archive.arc> [--ud <path>] [-y]")
+    print("  larc unpack <archive.arc> [--ud <path>] [--strip] [-y]")
 end
 
 local function hasFlag(flag)
@@ -70,7 +70,8 @@ elseif subcommand == "unpack" then
         write("Unpacking '" .. archivePath .. "'... ")
     end
 
-    local ok, extractedOrErr, destRoot = archive.unpack(archivePath, dest)
+    local strip = hasFlag("--strip")
+    local ok, extractedOrErr, destRoot = archive.unpack(archivePath, dest, strip)
 
     if ok then
         if not quiet then
