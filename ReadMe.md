@@ -9,7 +9,7 @@
   <img src="screenshots/kernel_panic_screenshot.png" width="30%" />
 </p>
 
-## See full documentation on https://lightos-cc.vercel.app/
+## See full documentation on https://lightos.madefor.cc
 ## To install the lightOS
 ```
 pastebin run 7pwFMZW8
