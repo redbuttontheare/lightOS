@@ -26,14 +26,8 @@ pastebin run 7pwFMZW8
 
 ## Changes:
 ```
-LARC:
-new command argument: --strip
-before update:
-sample: larc unpack /update.arc --ud /
-creates directory update in root
-after update:
-sample: larc unpack /update.arc --strip --ud /
-unpack in /
-(all directories e.g. bin files e.g bin/coolcommand be in /bin/)
+
+New command 
+snowfall
 
 ```

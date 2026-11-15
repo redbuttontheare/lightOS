@@ -60,6 +60,7 @@ elseif subcommand == "unpack" then
     local archivePath = args[2]
     local quiet = hasFlag("-y")
     local dest = flagValue("--ud") or (shell and shell.dir()) or "."
+    local strip = hasFlag("--strip")
 
     if not archivePath then
         usage()
@@ -70,7 +71,6 @@ elseif subcommand == "unpack" then
         write("Unpacking '" .. archivePath .. "'... ")
     end
 
-    local strip = hasFlag("--strip")
     local ok, extractedOrErr, destRoot = archive.unpack(archivePath, dest, strip)
 
     if ok then

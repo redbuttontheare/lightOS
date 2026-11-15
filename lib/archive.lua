@@ -148,7 +148,7 @@ function archive.pack(sourceDir, outputPath, rootName, compress)
     return true, fileCount
 end
 
-local function parseStructure(structure, destParentDir, strip)
+local function parseStructure(structure, destParentDir, stripRoot)
     local lines = splitLines(structure)
 
     local rootLine = lines[1]
@@ -156,7 +156,7 @@ local function parseStructure(structure, destParentDir, strip)
         return false, "Invalid archive: missing root name"
     end
     local rootName = rootLine:sub(1, -2)
-    local destRoot = strip and destParentDir or fs.combine(destParentDir, rootName)
+    local destRoot = stripRoot and destParentDir or fs.combine(destParentDir, rootName)
 
     local currentRelPath = nil
     local currentContentLines = nil
@@ -213,7 +213,7 @@ local function parseStructure(structure, destParentDir, strip)
     return true, extracted, destRoot
 end
 
-function archive.unpack(archivePath, destParentDir, strip)
+function archive.unpack(archivePath, destParentDir, stripRoot)
     if not fs.exists(archivePath) then
         return false, "Archive not found: " .. archivePath
     end
@@ -237,7 +237,7 @@ function archive.unpack(archivePath, destParentDir, strip)
         return false, "Unknown or missing archive mode marker"
     end
 
-    return parseStructure(structure, destParentDir, strip)
+    return parseStructure(structure, destParentDir, stripRoot)
 end
 
 return archive
