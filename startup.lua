@@ -1,7 +1,5 @@
 local nativeError = _G.error
 
-local nativeError = _G.error
-
 local function devicePanic(errMessage, level)
     local msg = errMessage or "Unknown device execution error"
     
@@ -33,6 +31,7 @@ local function devicePanic(errMessage, level)
 end
 
 _G.error = devicePanic
+_G.kernel.panic = devicePanic
 
 -- Main
 
@@ -41,4 +40,4 @@ term.setCursorPos(1, 1)
 print("lightOS UEFI")
 print("Booting device...")
 sleep(2)
-shell.run("/bootmgr.lua")
+shell.run("/[boot]/bootmgr.lua")

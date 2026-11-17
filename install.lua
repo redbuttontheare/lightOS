@@ -13,6 +13,26 @@
 local base = "https://raw.githubusercontent.com/redbuttontheare/lightOS/main/"
 local BghexValue = 0x0341fc
 
+local function bootstrapWidget(name)
+    fs.makeDir("/tmp/gl")
+    local response = http.get(base .. "usr/lib/gelaxy/" .. name .. ".lua")
+    if not response then
+        error("Cannot download installer component: " .. name)
+    end
+
+    local source = response.readAll()
+    response.close()
+
+    local file = fs.open("/tmp/gl/" .. name .. ".lua", "w")
+    file.write(source)
+    file.close()
+end
+
+bootstrapWidget("button")
+bootstrapWidget("checkbox")
+bootstrapWidget("textbox")
+bootstrapWidget("textlistbox")
+
 local Button = dofile("/tmp/gl/button.lua")
 local Checkbox = dofile("/tmp/gl/checkbox.lua")
 local Textbox = dofile("/tmp/gl/textbox.lua")
@@ -139,88 +159,62 @@ local function install_files()
     end
 
     fs.makeDir("/lightOS")
+    fs.makeDir("/lightOS/krnl")
+    fs.makeDir("/[boot]")
     fs.makeDir("/bin")
+    fs.makeDir("/usr")
     fs.makeDir("/lib")
+    fs.makeDir("/lib/gelaxy")
+    fs.makeDir("/usr/lib")
+    fs.makeDir("/usr/lib/gelaxy")
     fs.makeDir("/img")
+    fs.makeDir("/usr/[img]")
     fs.makeDir("/apps")
-    fs.makeDir("/.var")
-    fs.makeDir("/.var/pkgdb")
-    downloadWithLog("pkg.lua", "/lightOS/pkg.lua")
-    downloadWithLog("bm.lua", "/bm.lua")
+    fs.makeDir("/apps/lightWeb")
+    fs.makeDir("/usr/.var")
+    fs.makeDir("/usr/.var/pkgdb")
+    fs.makeDir("/usr/.var/cache/pkg")
+    fs.makeDir("/usr/.var/sys")
+
     downloadWithLog("startup.lua", "/startup.lua")
-    downloadWithLog("bootmgr.lua", "/bootmgr.lua")
-    downloadWithLog("autoexec.lua", "/lightOS/autoexec.lua")
-    downloadWithLog("autoexec_runner.lua", "/lightOS/autoexec_runner.lua")
-    downloadWithLog("lightOS/bs.lua", "/lightOS/bs.lua")
-    downloadWithLog("lightOS/bs.nfp", "/lightOS/bs.nfp")
-    downloadWithLog("lightOS/init.lua", "/lightOS/init.lua")
-    downloadWithLog("lightOS/lightshell.lua", "/lightOS/lightshell.lua")
-    downloadWithLog("lightOS/rcm.lua", "/lightOS/rcm.lua")
-    downloadWithLog("other/license.txt", "/license.txt")
-    downloadWithLog("lightOS/kernel.lua", "/lightOS/kernel.lua")
-    downloadWithLog("lightOS/err_hand.lua", "/lightOS/err_hand.lua")
+    downloadWithLog("[boot]/bm.lua", "/[boot]/bm.lua")
+    downloadWithLog("[boot]/bootmgr.lua", "/[boot]/bootmgr.lua")
 
-    -- commands
+    local lightOSFiles = {
+        "bs.lua", "bs.nfp", "err_hand.lua", "gb.lua", "lightshell.lua",
+        "rcm.lua", "system.lua", "krnl/init.lua", "krnl/kernel.lua"
+    }
+    for _, file in ipairs(lightOSFiles) do
+        downloadWithLog("lightOS/" .. file, "/lightOS/" .. file)
+    end
 
-    downloadWithLog("bin/cd", "/bin/cd")
-    downloadWithLog("bin/clear", "/bin/clear")
-    downloadWithLog("bin/ls", "/bin/ls")
-    downloadWithLog("bin/reboot", "/bin/reboot")
-    downloadWithLog("bin/shutdown", "/bin/shutdown")
-    downloadWithLog("bin/which", "/bin/which")
-    downloadWithLog("bin/about", "/bin/about")
-    downloadWithLog("bin/usermgr", "/bin/usermgr")
-    downloadWithLog("bin/fetch", "/bin/fetch")
-    downloadWithLog("bin/pastebin", "/bin/pastebin")
-    downloadWithLog("bin/ln", "/bin/ln")
-    downloadWithLog("bin/lnr", "/bin/lnr")
-    downloadWithLog("bin/id", "/bin/id")
-    downloadWithLog("bin/larc", "/bin/larc")
-    downloadWithLog("bin/echo", "/bin/echo")
-    downloadWithLog("bin/mv", "/bin/mv")
-    downloadWithLog("bin/cp", "/bin/cp")
-    downloadWithLog("bin/pkg-get", "/bin/pkg-get")
-    downloadWithLog("bin/cat", "/bin/cat")
-    downloadWithLog("bin/rm", "/bin/rm")
-    downloadWithLog("bin/mkdir", "/bin/mkdir")
-    downloadWithLog("bin/cfgedit", "/bin/cfgedit")
+    local binFiles = {
+        "about", "cat", "cd", "cfgedit", "clear", "cp", "echo", "fetch",
+        "id", "larc", "license", "ln", "lnr", "ls", "mkdir", "mv",
+        "pastebin", "pkg", "pkg-get", "reboot", "rm", "shutdown", "snowfall",
+        "touch", "usermgr", "which"
+    }
+    for _, file in ipairs(binFiles) do
+        downloadWithLog("usr/bin/" .. file, "/bin/" .. file)
+    end
 
+    local libFiles = {
+        "archive.lua", "console.lua", "lapi.lua", "logger.lua",
+        "gelaxy/button.lua", "gelaxy/checkbox.lua", "gelaxy/dialog.lua",
+        "gelaxy/listbox.lua", "gelaxy/progressbar.lua", "gelaxy/textbox.lua",
+        "gelaxy/textlistbox.lua", "gelaxy/window.lua"
+    }
+    for _, file in ipairs(libFiles) do
+        downloadWithLog("usr/lib/" .. file, "/lib/" .. file)
+        downloadWithLog("usr/lib/" .. file, "/usr/lib/" .. file)
+    end
 
-
-    -- libraries
-
-    downloadWithLog("lib/lapi.lua", "/lib/lapi.lua")
-    downloadWithLog("lib/console.lua", "/lib/console.lua")
-    downloadWithLog("lib/logger.lua", "/lib/logger.lua")
-    downloadWithLog("lightOS/system.lua", "/lightOS/system.lua")
-    downloadWithLog("lib/archive.lua", "/lib/archive.lua")
-
-    -- gelaxy window meneger libs
-
-    fs.makeDir("lib/gelaxy")
-    downloadWithLog("lib/gelaxy/button.lua", "/lib/gelaxy/button.lua")
-    downloadWithLog("lib/gelaxy/window.lua", "/lib/gelaxy/window.lua")
-    downloadWithLog("lib/gelaxy/checkbox.lua", "/lib/gelaxy/checkbox.lua")
-    downloadWithLog("lib/gelaxy/textbox.lua", "/lib/gelaxy/textbox.lua")
-    downloadWithLog("lib/gelaxy/listbox.lua", "/lib/gelaxy/listbox.lua")
-    downloadWithLog("lib/gelaxy/textlistbox.lua", "/lib/gelaxy/textlistbox.lua")
-    downloadWithLog("lib/gelaxy/dialog.lua", "/lib/gelaxy/dialog.lua")
-    downloadWithLog("lib/gelaxy/progressbar.lua", "/lib/gelaxy/progressbar.lua")
-
-    -- gelaxy bootloader
-
-    downloadWithLog("lightOS/gb.lua", "/lightOS/gb.lua")
-
-    -- images
-
-    downloadWithLog("img/about.nfp", "/img/about.nfp")
-    downloadWithLog("img/msg.nfp", "/img/msg.nfp")
-    downloadWithLog("img/err.nfp", "/img/err.nfp")
-
-    -- Applications
-
-    fs.makeDir("apps/lightWeb")
-    downloadWithLog("apps/lightWeb/lweb.lua", "/apps/lightWeb/lweb.lua")
+    downloadWithLog("usr/app/lightWeb/lweb.lua", "/apps/lightWeb/lweb.lua")
+    downloadWithLog("usr/app/secure.lua", "/apps/secure.lua")
+    downloadWithLog("usr/[img]/about.nfp", "/img/about.nfp")
+    downloadWithLog("usr/[img]/err.nfp", "/img/err.nfp")
+    downloadWithLog("usr/[img]/msg.nfp", "/img/msg.nfp")
+    downloadWithLog("usr/.var/sys/license.txt", "/usr/.var/sys/license.txt")
 
 
     term.setBackgroundColor(baseblue)
@@ -281,7 +275,7 @@ local function install_files()
         redraw()
     end
 
-    local pcfg = fs.open("lightOS/config.cfg", "w")
+    local pcfg = fs.open("/lightOS/config.cfg", "w")
     pcfg.writeLine("pcname=" .. pclabel)
     pcfg.writeLine("ver=" .. lv)
     pcfg.writeLine("kver=" .. kv)
