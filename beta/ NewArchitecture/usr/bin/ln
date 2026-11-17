@@ -1,0 +1,19 @@
+local args = { ... }
+local subcommand = args[1]
+
+if subcommand == "create" then
+    local path = args[2]
+    local target = args[3]
+    if not path or not target then
+        print("Usage: ln create <path> <target>")
+        return
+    end
+
+    local linkFile = fs.open(path, "w")
+    linkFile.writeLine("#!/bin/lnr")
+    linkFile.writeLine(" ")
+    linkFile.writeLine(target)
+    linkFile.close()
+else
+    print("Usage: ln create <path> <target>")
+end

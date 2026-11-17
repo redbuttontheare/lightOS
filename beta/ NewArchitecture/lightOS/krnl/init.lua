@@ -1,0 +1,40 @@
+-- Copyright (C) 2026 redbuttontheare@gmail.com
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+-- GNU General Public License for more details.
+
+shell.setPath(":/bin:/lightOS:/lib")
+
+local lapi = dofile("/lib/lapi.lua")
+-- local autoexec = dofile("/lightOS/autoexec_runner.lua")
+-- local autoexec_tbl = dofile("/lightOS/autoexec.lua")
+local cfg = lapi.loadConfig("/lightOS/config.cfg")
+
+local version = cfg.ver
+local shell = cfg.shell
+_G.ligtos_ver = version
+_G.lightos_shell = shell
+
+term.clear()
+term.setCursorPos(1,1)
+
+-- if cfg.autoexec ~= "0" then
+--    local autoexec = dofile("/lightOS/autoexec_runner.lua")
+--    local tbl = dofile("/lightOS/autoexec.lua")
+--    autoexec(tbl)
+-- end
+local pcfg = lapi.loadConfig("/lightOS/config.cfg")
+
+if pcfg.error_handler and fs.exists(pcfg.error_handler) then
+    local ok, err = pcall(dofile, pcfg.error_handler)
+    if not ok then
+        error("The SYSTEM HALTED")
+    end
+end

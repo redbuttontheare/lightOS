@@ -1,0 +1,4 @@
+local args = { ... }
+local fv = args[1]
+
+fs.makeDir(fv)

@@ -62,9 +62,4 @@ function lapi.saveConfig(path, key, value)
     file.close()
 end
 
-
-function lapi.createShortcut(path, target)
-    shell.run("/bin/ln", "create", path, target)
-end
-
 return lapi

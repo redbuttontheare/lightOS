@@ -1,0 +1,34 @@
+local args = { ... }
+if not args[1] then return end
+
+local path = shell.resolve(args[1])
+if fs.exists(path) and not fs.isDir(path) then
+    local f = fs.open(path, "r")
+    if f then
+        local _, h = term.getSize()
+        local lineCount = 0
+        local line = f.readLine()
+        
+        while line do
+            print(line)
+            lineCount = lineCount + 1
+            
+            if lineCount >= h - 1 then
+                term.setTextColor(colors.yellow)
+                write("*press any key to scroll down*")
+                term.setTextColor(colors.white)
+                
+                os.pullEvent("key")
+                
+                local _, cy = term.getCursorPos()
+                term.setCursorPos(1, cy)
+                term.clearLine()
+                
+                lineCount = 0
+            end
+            
+            line = f.readLine()
+        end
+        f.close()
+    end
+end

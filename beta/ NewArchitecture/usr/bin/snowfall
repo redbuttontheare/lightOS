@@ -1,0 +1,101 @@
+local args = {...}
+
+local term_w, term_h = term.getSize()
+local ww = term_w
+local wh = term_h
+local ssc = 3
+local sd = 300
+
+local function is_arg(t, as, al)
+    return t == as or t == al
+end
+
+if #args > 0 then
+    local i = 1
+    while i <= #args do
+        if is_arg(args[i], "-H", "--help") then
+            print("USAGE: snowfall [-w/--width <width>] [-h/--height <height>] [-c/--chance <chance>] [-d/--duration <duration>]")
+            print("\nAll command line arguments are OPTIONAL.\n")
+            print(" -H/--help: Prints this help menu")
+            print(" -w/--width <width>: Sets the World Width (default: screen width)")
+            print(" -h/--height <height>: Sets the World Height (default: screen height)")
+            print(" -c/--chance <chance>: Sets the snowflake spawn chance (percent per tick) (default: 3)")
+            print(" -d/--duration <duration>: Sets the duration (in ms) of each tick (default: 300)")
+            return
+        elseif is_arg(args[i], "-w", "--width") and args[i+1] then
+            ww = tonumber(args[i+1]) or ww
+            i = i + 1
+        elseif is_arg(args[i], "-h", "--height") and args[i+1] then
+            wh = tonumber(args[i+1]) or wh
+            i = i + 1
+        elseif is_arg(args[i], "-c", "--chance") and args[i+1] then
+            ssc = tonumber(args[i+1]) or ssc
+            i = i + 1
+        elseif is_arg(args[i], "-d", "--duration") and args[i+1] then
+            sd = tonumber(args[i+1]) or sd
+            i = i + 1
+        end
+        i = i + 1
+    end
+end
+
+math.randomseed(os.epoch("utc"))
+
+local w = {}
+for y = 1, wh do
+    w[y] = {}
+    for x = 1, ww do
+        w[y][x] = " "
+    end
+end
+
+term.clear()
+
+local function render()
+    for y = 1, wh do
+        term.setCursorPos(1, y)
+        term.write(table.concat(w[y]))
+    end
+end
+
+local function loop()
+    while true do
+        render()
+
+        for y = wh, 1, -1 do
+            for x = 1, ww do
+                local cell = w[y][x]
+                
+                if cell == "*" or cell == "+" or cell == "." then
+                    local d = math.random(-1, 1)
+                    local nx = x + d
+                    local ny = y + 1
+
+                    if ny < wh and nx >= 1 and nx <= ww and w[ny][nx] == " " then
+                        w[ny][nx] = cell
+                        w[y][x] = " "
+                    end
+                end
+
+                if y == 1 and w[y][x] == " " and math.random(0, 100) <= ssc then
+                    if math.random(0, 1) == 0 then
+                        w[y][x] = "*"
+                    elseif math.random(0, 1) == 0 then
+                        w[y][x] = "."
+                    else
+                        w[y][x] = "+"
+                    end
+                end
+            end
+        end
+
+        sleep(sd / 1000)
+    end
+end
+
+parallel.waitForAny(loop, function()
+    os.pullEvent("key")
+end)
+
+term.clear()
+term.setCursorPos(1, 1)

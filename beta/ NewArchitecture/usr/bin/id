@@ -1,0 +1,3 @@
+local cid = os.computerID()
+
+print("Computer ID: " .. cid)

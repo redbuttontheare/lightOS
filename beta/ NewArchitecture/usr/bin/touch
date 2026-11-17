@@ -1,0 +1,23 @@
+local console = dofile("/lib/console.lua")
+local args = { ... }
+local subcommand = args[1]
+local flag = args[2]
+
+local function crfile(fileaname)
+    local flg = flag.toString()
+
+    if flg == "-y" then
+        local file = fs.open(fileaname, "w")
+        file.writeLine("")
+        file.close()
+    else
+        console.print_ok("Touched file: " .. fileaname)
+        local file = fs.open(fileaname, "w")
+        file.writeLine("")
+        file.close()
+    end
+end
+
+-- ===Main===
+
+crfile(subcommand)
