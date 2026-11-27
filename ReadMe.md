@@ -1,4 +1,4 @@
-# lightOS
+<img src="screenshots/logo.png" />
 ## For ComputerCraft and it fork CC: Tweaked
 
 ### To install os need 3mb to install correctly

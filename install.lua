@@ -194,6 +194,7 @@ local function install_files()
     downloadWithLog("lib/logger.lua", "/lib/logger.lua")
     downloadWithLog("lightOS/system.lua", "/lightOS/system.lua")
     downloadWithLog("lib/archive.lua", "/lib/archive.lua")
+    downloadWithLog("lib/task.lua", "/lib/task.lua")
 
     -- gelaxy window meneger libs
 
