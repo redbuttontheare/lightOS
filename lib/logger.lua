@@ -1,3 +1,5 @@
+-- beta
+
 local logger = {}
 
 function logger.create_logfile(name)
